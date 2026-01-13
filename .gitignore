@@ -4,3 +4,6 @@
 
 # 업로드될 파일
 /storage/
+
+#디비
+/config/ezjoin.sql
