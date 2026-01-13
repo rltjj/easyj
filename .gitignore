@@ -1,0 +1,6 @@
+# 환경변수
+.env
+.htaccess
+
+# 업로드될 파일
+/storage/
