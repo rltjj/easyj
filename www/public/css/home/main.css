@@ -1,0 +1,47 @@
+:root {
+  --bg: #fff;
+  --bg2: #FAFAFA;
+  --color: #0858F7;
+  --text: #fff;
+  --text2: #000;
+  --text3: #BEBEBE;
+  --text4: #2779F4;
+  --text5: #4448D4;
+}
+
+body,
+html {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  scroll-padding-top: 100px;
+}
+
+header nav.container, footer div.footer-inner {
+  padding: 0 16px;
+  max-width: 1336px;
+  box-sizing: border-box;
+}
+
+main.container {
+  padding: 100px 10%;
+}
+
+main.container img {
+  width: 100%;
+  height: auto;
+}
+
+#main_m {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  #main {
+    display: none;
+  }
+
+  #main_m {
+    display: inline;
+  }
+}
+

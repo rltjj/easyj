@@ -21,5 +21,5 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-header('Location: ../login/login.html');
+header('Location: ../../www/public/pages/login/login.html');
 exit;

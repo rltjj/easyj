@@ -1,9 +1,8 @@
-# 환경변수
 .env
 .htaccess
 
-# 업로드될 파일
-/storage/
+config/ezjoin.sql
 
-#디비
-/config/ezjoin.sql
+storage/
+www/public/img/
+
