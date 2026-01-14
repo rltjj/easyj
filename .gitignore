@@ -5,4 +5,5 @@ config/ezjoin.sql
 
 storage/
 www/public/img/
+www/public/fonts/
 

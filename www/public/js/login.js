@@ -15,7 +15,7 @@ function showToast(message, success = false) {
 loginBtn.onclick = async () => {
   const formData = new FormData(form);
 
-  const res = await fetch('../../../../api/auth/login.php', {
+  const res = await fetch('/easyj/api/auth/login', {
     method: 'POST',
     body: formData
   });
