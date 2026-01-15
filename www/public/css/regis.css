@@ -27,7 +27,7 @@ h2 { margin-bottom: 25px; color: #333; text-align: center; }
 
 .container > label input[type="radio"] {
     margin-right: 8px;
-    accent-color: #4A90E2;
+    accent-color: #0858F7;
 }
 
 form label {
@@ -95,7 +95,7 @@ input:focus {
     display: inline-block;
     width: 16px; height: 16px;
     line-height: 16px;
-    background-color: #adb5bd;
+    background-color: #333;
     color: white;
     font-size: 11px;
     text-align: center;
@@ -143,7 +143,7 @@ input[name="agree"] {
 
 #submitBtn {
     width: 100%;
-    background-color: #4A90E2;
+    background-color: #0044cc;
     color: white;
     padding: 15px;
     border: none;

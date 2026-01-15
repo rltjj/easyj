@@ -31,7 +31,7 @@ $roleText = $roleTextMap[$role] ?? '';
   <?php endif; ?>
 
   <div class="profile" id="profileBtn">
-    <div class="circle"><?= mb_substr($roleText, 0, 1) ?></div>
+    <div class="circle <?= strtolower($role) ?>"><?= mb_substr($roleText, 0, 1) ?></div>
 
     <div class="profile-popup" id="profilePopup">
       <p><strong><?= htmlspecialchars($_SESSION['name']) ?></strong></p>

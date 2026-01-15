@@ -61,7 +61,7 @@ input:focus {
 }
 
 #loginBtn:hover {
-    background-color: #357ABD;
+    background-color: #0858F7;
 }
 
 a {
@@ -74,7 +74,7 @@ a {
 }
 
 a:hover {
-    color: #4A90E2;
+    color: #0044cc;
     text-decoration: underline;
 }
 

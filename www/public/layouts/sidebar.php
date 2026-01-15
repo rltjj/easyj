@@ -4,7 +4,7 @@ $role = $_SESSION['role'];
 <div class="wrapper">
   <aside class="sidebar">
     <ul class="menu">
-      <li><a href="../contract/index.php"><img id="log" src="../../img/log.png" alt="이지조인 로고"></a></li>
+      <div class="log"><a href="../contract/index.php"><img id="log" src="../../img/log.png" alt="이지조인 로고"></a></div>
       <li><a href="../contract/index.php">전자서명</a></li>
       <li><a href="../template/index.php">템플릿</a></li>
       <li><a href="../file/index.php">문서함</a></li>

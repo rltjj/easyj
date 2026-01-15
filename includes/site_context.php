@@ -22,7 +22,6 @@ if ($role === 'ADMIN') {
         SELECT id, name
         FROM sites
         WHERE operator_id = ?
-          AND is_deleted = 0
         ORDER BY created_at ASC, id ASC
     ");
     $stmt->execute([$userId]);
@@ -35,7 +34,6 @@ if ($role === 'ADMIN') {
         FROM sites s
         JOIN site_staff ss ON ss.site_id = s.id
         WHERE ss.user_id = ?
-          AND s.is_deleted = 0
         ORDER BY s.created_at ASC, s.id ASC
     ");
     $stmt->execute([$userId]);
