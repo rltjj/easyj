@@ -90,6 +90,10 @@ header nav.container {
   margin-left: auto;
 }
 
+.mobile-menu {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .navlinks {
     display: none;
@@ -98,6 +102,52 @@ header nav.container {
   .hamburger {
     display: block !important;
   }
+
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 80px;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background-color: var(--bg);
+    padding: 24px;
+    gap: 20px;
+
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 300;
+  }
+
+  .mobile-menu.active {
+    transform: translateX(0);
+  }
+
+  .mobile-menu a {
+    font-size: 18px;
+    width: 100%;
+  }
+
+  .navlinks #login, .navlinks #register {
+    width: 120px;
+  }
+
+}
+
+#menuOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 250;
+}
+
+#menuOverlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 /*-------------footer------------*/

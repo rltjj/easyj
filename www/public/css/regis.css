@@ -1,0 +1,157 @@
+body {
+    margin: 0; padding: 0;
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f4f7f9;
+    display: flex; justify-content: center; align-items: flex-start; 
+    min-height: 100vh; padding-top: 50px; padding-bottom: 50px;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 40px; border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%; max-width: 480px;
+}
+
+h2 { margin-bottom: 25px; color: #333; text-align: center; }
+
+.container > label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #555;
+}
+
+.container > label input[type="radio"] {
+    margin-right: 8px;
+    accent-color: #4A90E2;
+}
+
+form label {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+input:not([type="radio"]):not([type="checkbox"]) {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+input:focus {
+    border-color: #4A90E2;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.row input { margin-bottom: 0 !important; flex: 1; }
+
+#checkEmail, #btnAuth {
+    background-color: #f1f3f5;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 0 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#btnAuth {
+    height: 48px;
+}
+
+#checkEmail:hover, #btnAuth:hover {
+    background-color: #e9ecef;
+}
+
+.msg {
+    text-align: left;
+    font-size: 12px;
+    height: 18px;
+    margin-bottom: 10px;
+    color: #e03131;
+}
+
+.tooltip {
+    display: inline-block;
+    width: 16px; height: 16px;
+    line-height: 16px;
+    background-color: #adb5bd;
+    color: white;
+    font-size: 11px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: help;
+    position: relative;
+    margin-left: 5px;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+#operatorFields {
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+input[name="agree"] {
+    width: auto !important;
+    margin-right: 8px;
+}
+
+#registerBtn {
+    width: 100%;
+    background-color: #4A90E2;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 25px;
+    cursor: pointer;
+}
+
+#registerBtn:hover { background-color: #357ABD; }

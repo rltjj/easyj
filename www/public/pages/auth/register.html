@@ -3,57 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
-  <link rel="stylesheet" href="../../css/auth.css">
+  <link rel="stylesheet" href="../../css/regis.css">
 </head>
 <body>
 
-<form id="registerForm" class="container">
+<div class="container">
   <h2>회원가입</h2>
 
-  <label>로그인에 사용할 아이디를 입력해주세요.</label>
-  <div class="row">
-    <input type="email" id="email" name="email" required>
-    <button type="button" id="checkEmail">중복확인</button>
-  </div>
-  <div class="msg" id="emailMsg"></div>
-
   <label>
-    로그인에 사용할 비밀번호를 입력해주세요
-    <span class="tooltip">!
-      <span class="tooltip-text">
-        비밀번호는 8~20자로 영문, 숫자, 특수문자(! @ #)가 1자 이상 포함
+    <input type="radio" name="role" value="OPERATOR" checked> 운영자
+  </label>
+  <label>
+    <input type="radio" name="role" value="STAFF"> 직원
+  </label>
+
+  <form id="registerForm">
+    <label>로그인에 사용할 아이디를 입력해주세요.</label>
+    <div class="row">
+      <input type="email" id="email" name="email" placeholder="아이디" required>
+      <button type="button" id="checkEmail">중복확인</button>
+    </div>
+    <div class="msg" id="emailMsg"></div>
+
+    <label>로그인에 사용할 비밀번호를 입력해주세요.
+      <span class="tooltip">!
+        <span class="tooltip-text">
+          비밀번호는 8~20자로 영문, 숫자, 특수문자(! @ #)가 1자 이상 포함
+        </span>
       </span>
-    </span>
-  </label>
-  <input type="password" id="password" name="password" required>
-  <div class="msg" id="pwMsg"></div>
+    </label>
+    <input type="password" name="password" placeholder="비밀번호" required>
+    <div class="msg" id="pwMsg"></div>
+    <input type="password" name="password_confirm" placeholder="비밀번호 확인" required>
+    <div class="msg" id="pwConfirmMsg"></div>
 
-  <input type="password" id="passwordConfirm" placeholder="비밀번호 확인" required>
-  <div class="msg" id="pwConfirmMsg"></div>
+    <label>이름과 연락처를 입력해주세요.</label>
+    <input name="name" placeholder="이름" required>
+    <input name="phone" placeholder="연락처" required>
 
-  <hr>
+    <button type="button" id="btnAuth">본인인증하기</button>
 
-  <h4>시행사 정보를 입력해주세요</h4>
-  <input id="name" name="name" placeholder="성명" required>
-  <input id="phone" name="phone" placeholder="전화번호(- 제외)" required>
-  <input id="position" name="position" placeholder="직급" required>
-  <input id="company_name" name="company_name" placeholder="상호명" required>
-  <input id="ceo_name" name="ceo_name" placeholder="대표자 성명" required>
-  <input id="address" name="address" placeholder="사무실 주소" required>
-  <input id="company_phone" name="company_phone" placeholder="대표번호" required>
-  <input id="site_name" name="site_name" placeholder="현장명" required>
-  <input id="modelhouse_address" name="modelhouse_address" placeholder="모델하우스 주소" required>
+    <div id="operatorFields">
+      <label>시행사 정보를 입력해주세요.</label>
+      <input name="position" placeholder="직급">
+      <input name="company_name" placeholder="상호명">
+      <input name="ceo_name" placeholder="대표자 성명">
+      <input name="office_address" placeholder="사무실 주소">
+      <input name="company_phone" placeholder="대표번호">
+      <input name="site_name" placeholder="현장명">
+      <input name="modelhouse_address" placeholder="모델하우스 주소">
 
-  <h4>분양대행사 정보를 입력해주세요</h4>
-  <input id="agency_manager" name="agency_manager" placeholder="담당자 성명" required>
-  <input id="agency_phone" name="agency_phone" placeholder="담당자 연락처(- 제외)" required>
+      <label>분양대행사 정보를 입력해주세요.</label>
+      <input name="agent_name" placeholder="담당자 이름">
+      <input name="agent_phone" placeholder="담당자 연락처">
+    </div>
 
-  <label class="checkbox">
-    <input type="checkbox" id="agree"> 개인정보 수집 및 이용에 동의합니다
-  </label>
+    <label>
+      <input type="checkbox" name="agree" required>
+      개인정보 수집 및 이용에 동의합니다.
+    </label>
 
-  <button type="button" id="submitBtn" disabled>회원가입 완료</button>
-</form>
+    <button type="button" id="registerBtn">회원가입</button>
+  </form>
+
+  <div id="toast"></div>
+</div>
 
 <script src="../../js/register.js"></script>
 </body>
