@@ -141,7 +141,7 @@ input[name="agree"] {
     margin-right: 8px;
 }
 
-#registerBtn {
+#submitBtn {
     width: 100%;
     background-color: #4A90E2;
     color: white;
@@ -154,4 +154,4 @@ input[name="agree"] {
     cursor: pointer;
 }
 
-#registerBtn:hover { background-color: #357ABD; }
+#submitBtn:hover { background-color: #357ABD; }

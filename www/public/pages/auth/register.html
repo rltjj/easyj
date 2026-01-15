@@ -10,14 +10,15 @@
 <div class="container">
   <h2>회원가입</h2>
 
-  <label>
-    <input type="radio" name="role" value="OPERATOR" checked> 운영자
-  </label>
-  <label>
-    <input type="radio" name="role" value="STAFF"> 직원
-  </label>
-
   <form id="registerForm">
+    <label>가입 유형을 선택해주세요.</label>
+    <label>
+      <input type="radio" name="role" value="OPERATOR" checked> 운영자
+    </label>
+    <label>
+      <input type="radio" name="role" value="STAFF"> 직원
+    </label>
+
     <label>로그인에 사용할 아이디를 입력해주세요.</label>
     <div class="row">
       <input type="email" id="email" name="email" placeholder="아이디" required>
@@ -32,25 +33,27 @@
         </span>
       </span>
     </label>
-    <input type="password" name="password" placeholder="비밀번호" required>
+    <input type="password" id="password" name="password" placeholder="비밀번호" required>
     <div class="msg" id="pwMsg"></div>
-    <input type="password" name="password_confirm" placeholder="비밀번호 확인" required>
+    <input type="password" id="passwordConfirm" name="password_confirm" placeholder="비밀번호 확인" required>
     <div class="msg" id="pwConfirmMsg"></div>
 
     <label>이름과 연락처를 입력해주세요.</label>
     <input name="name" placeholder="이름" required>
     <input name="phone" placeholder="연락처" required>
 
+    <label>본인인증을 해주세요.</label>
     <button type="button" id="btnAuth">본인인증하기</button>
+    <input type="hidden" name="auth_verified" id="auth_verified" value="0">
 
     <div id="operatorFields">
       <label>시행사 정보를 입력해주세요.</label>
-      <input name="position" placeholder="직급">
-      <input name="company_name" placeholder="상호명">
-      <input name="ceo_name" placeholder="대표자 성명">
-      <input name="office_address" placeholder="사무실 주소">
-      <input name="company_phone" placeholder="대표번호">
       <input name="site_name" placeholder="현장명">
+      <input name="company_name" placeholder="상호명">
+      <input name="position" placeholder="직급">
+      <input name="ceo_name" placeholder="대표자 성명">
+      <input name="company_phone" placeholder="대표번호">
+      <input name="office_address" placeholder="사무실 주소">
       <input name="modelhouse_address" placeholder="모델하우스 주소">
 
       <label>분양대행사 정보를 입력해주세요.</label>
@@ -59,11 +62,11 @@
     </div>
 
     <label>
-      <input type="checkbox" name="agree" required>
+      <input type="checkbox" id="agree" name="agree" required>
       개인정보 수집 및 이용에 동의합니다.
     </label>
 
-    <button type="button" id="registerBtn">회원가입</button>
+    <button type="button" id="submitBtn">회원가입</button>
   </form>
 
   <div id="toast"></div>

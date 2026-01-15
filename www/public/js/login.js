@@ -1,5 +1,4 @@
 const form = document.getElementById('loginForm');
-const loginBtn = document.getElementById('loginBtn');
 const toast = document.getElementById('toast');
 
 function showToast(message, success = false) {
@@ -12,21 +11,29 @@ function showToast(message, success = false) {
   }, 3000);
 }
 
-loginBtn.onclick = async () => {
-  const formData = new FormData(form);
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  const res = await fetch('/easyj/api/auth/login', {
-    method: 'POST',
-    body: formData
-  });
+  try {
+    const formData = new FormData(form);
 
-  const data = await res.json();
+    const res = await fetch('/easyj/api/auth/login', {
+      method: 'POST',
+      body: formData
+    });
 
-  showToast(data.message, data.success);
+    const data = await res.json();
 
-  if (data.success) {
-    setTimeout(() => {
-      location.href = '../contract/index.php';
-    }, 1000);
+    showToast(data.message, data.success);
+
+    if (data.success) {
+      setTimeout(() => {
+        location.href = '../contract/index.php';
+      }, 1000);
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast('서버 오류가 발생했습니다.');
   }
-};
+});
