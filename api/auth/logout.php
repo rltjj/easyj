@@ -21,5 +21,5 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-header('Location: ../auth/login.html');
+header('Location: /easyj/www/public/pages/auth/login.html');
 exit;

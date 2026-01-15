@@ -6,7 +6,7 @@ require_once BASE_PATH . '/includes/site_context.php';
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>전자서명</title>
+  <title>관리자</title>
   <link rel="stylesheet" href="../../css/layout.css">
 </head>
 <body>
@@ -20,7 +20,7 @@ require_once BASE_PATH . '/includes/site_context.php';
     </div>
 
     <main class="content">
-      전자서명
+      관리자
     </main>
   </div>
 
