@@ -48,3 +48,8 @@ if (empty($_SESSION['site_id']) && !empty($sites)) {
 }
 
 $currentSiteId = $_SESSION['site_id'] ?? null;
+
+if (!in_array($_SESSION['role'], ['ADMIN', 'OPERATOR', 'STAFF'])) {
+    http_response_code(403);
+    exit('권한 없음');
+}

@@ -54,6 +54,19 @@ img {
     color: #fff;
 }
 
+.menu li.active {
+    background-color: #0858F7;
+    border-radius: 8px;
+    color: #fff;
+    margin: 16px;
+}
+
+.menu li.active a {
+  color: #fff;
+  font-weight: 600;
+  margin: 0px;
+}
+
 .main-area {
     flex: 1;
     margin-left: 260px;

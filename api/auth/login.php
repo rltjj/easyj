@@ -26,6 +26,14 @@ if (!$user || !password_verify($password, $user['password'])) {
     exit;
 }
 
+if ($user['status'] !== 'ACTIVE') {
+    echo json_encode([
+        'success' => false,
+        'message' => '현재 계정은 비활성화 상태입니다. 관리자에게 문의하세요.'
+    ]);
+    exit;
+}
+
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['role'] = $user['role'];
 $_SESSION['name'] = $user['name'];

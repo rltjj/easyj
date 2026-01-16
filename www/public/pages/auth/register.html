@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
-  <link rel="stylesheet" href="../../css/regis.css">
+  <link rel="stylesheet" href="../../css/regis.css?v=<?=filemtime($_SERVER['DOCUMENT_ROOT'].'../../css/regis.css')?>">
 </head>
 <body>
 
@@ -56,7 +56,7 @@
       <input name="office_address" placeholder="사무실 주소">
       <input name="modelhouse_address" placeholder="모델하우스 주소">
 
-      <label>분양대행사 정보를 입력해주세요.</label>
+      <label>모집주체/분양대행사 정보를 입력해주세요.</label>
       <input name="agent_name" placeholder="담당자 이름">
       <input name="agent_phone" placeholder="담당자 연락처">
     </div>

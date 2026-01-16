@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../../bootstrap.php';
 require_once BASE_PATH . '/includes/site_context.php';
+$activeMenu = 'mypage';
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -8,6 +9,7 @@ require_once BASE_PATH . '/includes/site_context.php';
   <meta charset="UTF-8">
   <title>마이페이지</title>
   <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/template.css">
 </head>
 <body>
   <div class="sidebar">
@@ -20,7 +22,7 @@ require_once BASE_PATH . '/includes/site_context.php';
     </div>
 
     <main class="content">
-      마이페이지
+      
     </main>
   </div>
 
