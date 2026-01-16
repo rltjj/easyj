@@ -66,11 +66,12 @@ try {
 
         $stmt = $pdo->prepare("
             INSERT INTO operator_agency
-            (site_id, manager_name, manager_phone)
-            VALUES (?, ?, ?)
+            (site_id, agency_name, manager_name, manager_phone)
+            VALUES (?, ?, ?, ?)
         ");
         $stmt->execute([
             $siteId,
+            $_POST['agency_name'],
             $_POST['agent_name'],
             $_POST['agent_phone']
         ]);

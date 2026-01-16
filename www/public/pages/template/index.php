@@ -91,7 +91,7 @@ $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
       <?php endif; ?>
 
-      <?php include 'create_modal.php'; ?>
+      <?php include 'create.php'; ?>
 
       <div class="bulk-bar">
         선택 <span id="selectedCount">0</span>개

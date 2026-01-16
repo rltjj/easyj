@@ -28,14 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.search = function() {
     const k = document.getElementById('keyword').value;
-    const category = document.querySelector('.toolbar select').value;
-    location.href = `?category=${encodeURIComponent(category)}&keyword=${encodeURIComponent(k)}&limit=${limit}`;
+    const categoryId = document.querySelector('.toolbar select').value;
+
+    location.href =
+      `?category_id=${encodeURIComponent(categoryId)}` +
+      `&keyword=${encodeURIComponent(k)}` +
+      `&limit=${limit}`;
   };
 
   window.setLimit = function(n) {
-    const category = document.querySelector('.toolbar select').value;
+    const categoryId = document.querySelector('.toolbar select').value;
     const keyword = document.getElementById('keyword').value;
-    location.href = `?category=${encodeURIComponent(category)}&keyword=${encodeURIComponent(keyword)}&limit=${n}`;
+
+    location.href =
+      `?category_id=${encodeURIComponent(categoryId)}` +
+      `&keyword=${encodeURIComponent(keyword)}` +
+      `&limit=${n}`;
   };
 
   window.openModal = () =>
@@ -71,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   editBtn.addEventListener('click', () => {
     if (!activeTemplateId) return;
-    location.href = `editor.php?id=${activeTemplateId}`;
+    location.href = `edit.php?id=${activeTemplateId}`;
   });
 
   favoriteBtn.addEventListener('click', () => {
