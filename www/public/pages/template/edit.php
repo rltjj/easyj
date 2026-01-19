@@ -95,9 +95,9 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:16px;
-  padding:0;
-  box-sizing:border-box;
+  font-size:22px;
+  font-weight:bold;
+  line-height:1;
 }
 .resize {
   position:absolute;
@@ -121,6 +121,31 @@ body {
   left:20px;
   padding:10px 20px;
 }
+
+.prop-panel {
+  width:260px;
+  background:#fafafa;
+  border-left:1px solid #ddd;
+  padding:10px;
+  overflow:auto;
+}
+
+.prop-panel h3 {
+  margin-top:0;
+}
+
+.prop-panel label {
+  display:block;
+  margin-bottom:10px;
+  font-size:13px;
+}
+
+.prop-panel input,
+.prop-panel select {
+  width:100%;
+  padding:4px;
+  box-sizing:border-box;
+}
 </style>
 </head>
 
@@ -135,11 +160,68 @@ body {
     <button onclick="addField('CHECKBOX', <?= $s['id'] ?>)">체크박스</button>
     <button onclick="addField('SIGN', <?= $s['id'] ?>)">서명</button>
     <button onclick="addField('STAMP', <?= $s['id'] ?>)">날인</button>
+    <button onclick="addField('DATE_Y', <?= $s['id'] ?>)">날짜(연)</button>
+    <button onclick="addField('DATE_M', <?= $s['id'] ?>)">날짜(월)</button>
+    <button onclick="addField('DATE_D', <?= $s['id'] ?>)">날짜(일)</button>
     <hr>
   <?php endforeach; ?>
 </div>
 
 <div class="editor" id="pdfWrap"></div>
+
+<div class="prop-panel" id="propPanel">
+  <h3>필드 설정</h3>
+
+  <div id="noSelect">필드를 선택하세요</div>
+
+  <div id="fieldProps" style="display:none;">
+    <label>
+      라벨
+      <input type="text" id="propLabel">
+    </label>
+
+    <label>
+      필수 여부
+      <select id="propRequired">
+        <option value="0">선택</option>
+        <option value="1">필수</option>
+      </select>
+    </label>
+
+    <div id="checkboxProps" style="display:none;">
+      <label>
+        그룹 라벨
+        <input type="text" id="propGroup">
+      </label>
+
+      <label>
+        최소 선택
+        <input type="number" id="propMin" min="0">
+      </label>
+
+      <label>
+        최대 선택
+        <input type="number" id="propMax" min="1">
+      </label>
+    </div>
+
+    <div id="textProps" style="display:none;">
+      <label>
+        폰트 크기
+        <input type="number" id="propFontSize" min="8" max="48">
+      </label>
+
+      <label>
+        정렬
+        <select id="propAlign">
+          <option value="left">왼쪽</option>
+          <option value="center">가운데</option>
+          <option value="right">오른쪽</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</div>
 
 <button class="save-btn" onclick="saveFields()">💾 저장</button>
 
@@ -148,6 +230,61 @@ const PDF_URL = "<?= htmlspecialchars($pdfUrl) ?>";
 const TEMPLATE_ID = <?= $templateId ?>;
 const EXIST_FIELDS = <?= json_encode($fields, JSON_UNESCAPED_UNICODE) ?>;
 const GRID = 5;
+
+const propLabel    = document.getElementById('propLabel');
+const propRequired = document.getElementById('propRequired');
+const propGroup    = document.getElementById('propGroup');
+const propMin      = document.getElementById('propMin');
+const propMax      = document.getElementById('propMax');
+const propFontSize = document.getElementById('propFontSize');
+const propAlign    = document.getElementById('propAlign');
+
+propLabel.oninput = () => {
+  selectedFields.forEach(el => {
+    el.dataset.label = propLabel.value;
+    if (el.dataset.type !== 'CHECKBOX') {
+      el.textContent = propLabel.value;
+    }
+  });
+};
+
+propRequired.onchange = () => {
+  selectedFields.forEach(el => {
+    el.dataset.required = propRequired.value;
+  });
+};
+
+propGroup.oninput = () => {
+  selectedFields.forEach(el => {
+    el.dataset.group = propGroup.value;
+  });
+};
+
+propMin.oninput = () => {
+  selectedFields.forEach(el => {
+    el.dataset.min = propMin.value;
+  });
+};
+
+propMax.oninput = () => {
+  selectedFields.forEach(el => {
+    el.dataset.max = propMax.value;
+  });
+};
+
+propFontSize.oninput = () => {
+  selectedFields.forEach(el => {
+    el.dataset.fontSize = propFontSize.value;
+    el.style.fontSize = propFontSize.value + 'px';
+  });
+};
+
+propAlign.onchange = () => {
+  selectedFields.forEach(el => {
+    el.dataset.align = propAlign.value;
+    el.style.textAlign = propAlign.value;
+  });
+};
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "/easyj/assets/pdfjs/pdf.worker.min.js";
@@ -205,16 +342,43 @@ function addField(type, signerId) {
     return;
   }
 
+  let width = 60;
+  let height = 30;
+  let label = type;
+
+  if (type === 'CHECKBOX') {
+    width = 22;
+    height = 22;
+    label = '';
+  }
+
+  if (type === 'DATE_Y') {
+    width = 70;
+    label = 'YYYY';
+  }
+
+  if (type === 'DATE_M') {
+    width = 45;
+    label = 'MM';
+  }
+
+  if (type === 'DATE_D') {
+    width = 45;
+    label = 'DD';
+  }
+
   const field = {
     id: 'new_' + Date.now(),
     field_type: type,
     signer_id: signerId,
-    label: type === 'CHECKBOX' ? '' : type,
+    label,
     page_no: activePage.dataset.page,
     pos_x: 50,
     pos_y: 50,
-    width: type === 'CHECKBOX' ? 22 : 120,
-    height: type === 'CHECKBOX' ? 22 : 30
+    width,
+    height,
+    font_size: 12,
+    text_align: 'left'
   };
 
   createFieldEl(field, activePage);
@@ -227,15 +391,40 @@ function createFieldEl(f, page) {
   el.dataset.type = f.field_type;
   el.dataset.signer = f.signer_id;
   el.dataset.page = f.page_no;
+  el.dataset.label = f.label || '';
 
   el.style.left = f.pos_x + 'px';
   el.style.top  = f.pos_y + 'px';
   el.style.width = f.width + 'px';
   el.style.height = f.height + 'px';
+  el.style.textAlign = 'center';
+
+  el.dataset.required = f.required ?? '0';
+  el.dataset.group = f.group_label ?? '';
+  el.dataset.min = f.min_select ?? '';
+  el.dataset.max = f.max_select ?? '';
+  el.dataset.fontSize = f.font_size ?? '12';
+  el.style.fontSize = el.dataset.fontSize + 'px';
+  el.dataset.align = f.text_align ?? '';
 
   if (f.field_type === 'CHECKBOX') {
     el.classList.add('checkbox');
-    el.innerHTML = '☐';
+    el.innerHTML = '□';
+
+  } else if (
+    f.field_type === 'DATE_Y' ||
+    f.field_type === 'DATE_M' ||
+    f.field_type === 'DATE_D'
+  ) {
+    el.textContent = f.label;
+    el.style.fontSize = '12px';
+    el.style.background = '#fdfdfd';
+
+    const resize = document.createElement('div');
+    resize.className = 'resize';
+    el.appendChild(resize);
+    makeResizable(el, resize, page);
+
   } else {
     el.textContent = f.label;
     const resize = document.createElement('div');
@@ -328,7 +517,37 @@ function select(el, multi = false) {
     el.classList.add('selected');
     selectedFields.push(el);
   }
+
+  showProps(el);
 }
+
+function showProps(el) {
+  document.getElementById('noSelect').style.display = 'none';
+  document.getElementById('fieldProps').style.display = 'block';
+
+  document.getElementById('propLabel').value = el.dataset.label || '';
+  document.getElementById('propRequired').value = el.dataset.required || '0';
+
+  const type = el.dataset.type;
+
+  document.getElementById('checkboxProps').style.display =
+    type === 'CHECKBOX' ? 'block' : 'none';
+
+  if (type === 'CHECKBOX') {
+    propGroup.value = el.dataset.group || '';
+    propMin.value = el.dataset.min || '';
+    propMax.value = el.dataset.max || '';
+  }
+
+  document.getElementById('textProps').style.display =
+    type === 'TEXT' ? 'block' : 'none';
+
+  if (type === 'TEXT') {
+    propFontSize.value = el.dataset.fontSize || '12';
+    propAlign.value = el.dataset.align || 'left';
+  }
+}
+
 
 function setActivePage(page) {
   document.querySelectorAll('.page').forEach(p =>
@@ -419,7 +638,13 @@ function saveFields() {
         pos_x: parseInt(el.style.left),
         pos_y: parseInt(el.style.top),
         width: parseInt(el.style.width),
-        height: parseInt(el.style.height)
+        height: parseInt(el.style.height),
+        required: el.dataset.required ?? 0,
+        group_label: el.dataset.group ?? '',
+        min_select: el.dataset.min ?? null,
+        max_select: el.dataset.max ?? null,
+        font_size: el.dataset.fontSize ?? null,
+        text_align: el.dataset.align ?? 'left'
       });
     });
   });
