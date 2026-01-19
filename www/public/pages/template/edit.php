@@ -108,6 +108,13 @@ body {
   background:#4f46e5;
   cursor:se-resize;
 }
+.select-box {
+  position:absolute;
+  border:1px dashed #4f46e5;
+  background:rgba(79,70,229,.15);
+  pointer-events:none;
+  z-index:999;
+}
 .save-btn {
   position:fixed;
   bottom:20px;
@@ -140,13 +147,14 @@ body {
 const PDF_URL = "<?= htmlspecialchars($pdfUrl) ?>";
 const TEMPLATE_ID = <?= $templateId ?>;
 const EXIST_FIELDS = <?= json_encode($fields, JSON_UNESCAPED_UNICODE) ?>;
+const GRID = 5;
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "/easyj/assets/pdfjs/pdf.worker.min.js";
 
 let pages = [];
 let activePage = null;
-let selected = null;
+let selectedFields = [];
 let copiedField = null;
 
 pdfjsLib.getDocument(PDF_URL).promise.then(async pdf => {
@@ -240,7 +248,7 @@ function createFieldEl(f, page) {
 
   el.onclick = e => {
     e.stopPropagation();
-    select(el);
+    select(el, e.ctrlKey);
   };
 
   page.appendChild(el);
@@ -249,23 +257,46 @@ function createFieldEl(f, page) {
 
 function makeDraggable(el, container) {
   let ox, oy, down = false;
+  let startPositions = [];
 
-  el.onmousedown = e => {
-    if (e.target.classList.contains('resize')) return;
-    down = true;
-    select(el);
-    ox = e.offsetX;
-    oy = e.offsetY;
-  };
-
-  document.onmousemove = e => {
+  function move(e) {
     if (!down) return;
-    const r = container.getBoundingClientRect();
-    el.style.left = e.clientX - r.left - ox + 'px';
-    el.style.top  = e.clientY - r.top  - oy + 'px';
-  };
 
-  document.onmouseup = () => down = false;
+    const r = container.getBoundingClientRect();
+    const dx = Math.round((e.clientX - r.left - ox) / GRID) * GRID;
+    const dy = Math.round((e.clientY - r.top  - oy) / GRID) * GRID;
+
+    startPositions.forEach(p => {
+      p.el.style.left = (p.x + dx) + 'px';
+      p.el.style.top  = (p.y + dy) + 'px';
+    });
+  }
+
+  function up() {
+    down = false;
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+  }
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('resize')) return;
+
+    down = true;
+    select(el, e.ctrlKey);
+
+    const r = container.getBoundingClientRect();
+    ox = e.clientX - r.left;
+    oy = e.clientY - r.top;
+
+    startPositions = selectedFields.map(f => ({
+      el: f,
+      x: parseInt(f.style.left),
+      y: parseInt(f.style.top)
+    }));
+
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
 }
 
 function makeResizable(el, handle, container) {
@@ -285,12 +316,18 @@ function makeResizable(el, handle, container) {
   };
 }
 
-function select(el) {
-  document.querySelectorAll('.field').forEach(f =>
-    f.classList.remove('selected')
-  );
-  el.classList.add('selected');
-  selected = el;
+function select(el, multi = false) {
+  if (!multi) {
+    document.querySelectorAll('.field').forEach(f =>
+      f.classList.remove('selected')
+    );
+    selectedFields = [];
+  }
+
+  if (!selectedFields.includes(el)) {
+    el.classList.add('selected');
+    selectedFields.push(el);
+  }
 }
 
 function setActivePage(page) {
@@ -303,25 +340,47 @@ function setActivePage(page) {
 
 document.addEventListener('keydown', e => {
 
-  if (!selected) return;
+  if (!selectedFields.length) return;
+
+  const step = e.shiftKey ? 10 : 1;
+  let moved = false;
+
+  selectedFields.forEach(el => {
+    let x = parseInt(el.style.left);
+    let y = parseInt(el.style.top);
+
+    switch (e.key) {
+      case 'ArrowLeft':  x -= step; break;
+      case 'ArrowRight': x += step; break;
+      case 'ArrowUp':    y -= step; break;
+      case 'ArrowDown':  y += step; break;
+    }
+
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+  });
 
   if (e.key === 'Backspace' || e.key === 'Delete') {
     e.preventDefault();
-    selected.remove();
-    selected = null;
+    selectedFields.forEach(el => el.remove());
+    selectedFields = [];
   }
 
   if (e.ctrlKey && e.key === 'c') {
+    if (!selectedFields.length) return;
+    const base = selectedFields[0];
+
     copiedField = {
-      type: selected.dataset.type,
-      signer: selected.dataset.signer,
-      width: selected.offsetWidth,
-      height: selected.offsetHeight,
-      html: selected.innerHTML
+      type: base.dataset.type,
+      signer: base.dataset.signer,
+      width: base.offsetWidth,
+      height: base.offsetHeight
     };
   }
 
   if (e.ctrlKey && e.key === 'v') {
+    const base = selectedFields[0];
+
     if (!copiedField || !activePage) return;
 
     const f = {
@@ -330,8 +389,8 @@ document.addEventListener('keydown', e => {
       signer_id: copiedField.signer,
       label: '',
       page_no: activePage.dataset.page,
-      pos_x: parseInt(selected.style.left) + 10,
-      pos_y: parseInt(selected.style.top) + 10,
+      pos_x: parseInt(base.style.left) + 10,
+      pos_y: parseInt(base.style.top) + 10,
       width: copiedField.width,
       height: copiedField.height
     };
@@ -373,6 +432,73 @@ function saveFields() {
   .then(r=>r.json())
   .then(r=>alert(r.message || '저장 완료'));
 }
+
+let selectBox = null;
+let startX = 0;
+let startY = 0;
+
+document.getElementById('pdfWrap').addEventListener('mousedown', e => {
+  if (!activePage) return;
+  if (e.target.closest('.field')) return;
+
+  const pageRect = activePage.getBoundingClientRect();
+
+  startX = e.clientX - pageRect.left;
+  startY = e.clientY - pageRect.top;
+
+  selectBox = document.createElement('div');
+  selectBox.className = 'select-box';
+  selectBox.style.left = startX + 'px';
+  selectBox.style.top  = startY + 'px';
+  selectBox.style.width = '0px';
+  selectBox.style.height = '0px';
+
+  activePage.appendChild(selectBox);
+
+  function onMove(ev) {
+    const x = ev.clientX - pageRect.left;
+    const y = ev.clientY - pageRect.top;
+
+    const left   = Math.min(x, startX);
+    const top    = Math.min(y, startY);
+    const width  = Math.abs(x - startX);
+    const height = Math.abs(y - startY);
+
+    selectBox.style.left   = left + 'px';
+    selectBox.style.top    = top + 'px';
+    selectBox.style.width  = width + 'px';
+    selectBox.style.height = height + 'px';
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+
+    const boxRect = selectBox.getBoundingClientRect();
+    selectBox.remove();
+
+    document.querySelectorAll('.field').forEach(f => {
+      if (f.parentElement !== activePage) return;
+
+      const fr = f.getBoundingClientRect();
+      const hit =
+        fr.left   < boxRect.right &&
+        fr.right  > boxRect.left &&
+        fr.top    < boxRect.bottom &&
+        fr.bottom > boxRect.top;
+
+      if (hit) {
+        f.classList.add('selected');
+        if (!selectedFields.includes(f)) {
+          selectedFields.push(f);
+        }
+      }
+    });
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+});
 </script>
 
 </body>
