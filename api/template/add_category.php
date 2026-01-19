@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if (!in_array($_SESSION['role'], ['ADMIN', 'OPERATOR'])) {
+if (!in_array($_SESSION['role'], ['ADMIN'])) {
     http_response_code(403);
     echo json_encode([
         'success' => false,

@@ -1,4 +1,17 @@
 let activeTemplateId = null;
+let activeIsTrash = false;
+
+window.openModal = function () {
+  const modal = document.getElementById('templateModal');
+  if (!modal) return;
+  modal.classList.add('show');
+};
+
+window.closeModal = function () {
+  const modal = document.getElementById('templateModal');
+  if (!modal) return;
+  modal.classList.remove('show');
+};
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -21,10 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  checkAll.addEventListener('change', e => {
-    checks.forEach(c => c.checked = e.target.checked);
-    updateCount();
-  });
+  if (checkAll) {
+    checkAll.addEventListener('change', e => {
+      checks.forEach(c => c.checked = e.target.checked);
+      updateCount();
+    });
+  }
 
   window.search = function() {
     const k = document.getElementById('keyword').value;
@@ -46,22 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
       `&limit=${n}`;
   };
 
-  window.openModal = () =>
-    document.getElementById('templateModal').classList.add('show');
-
-  window.closeModal = () =>
-    document.getElementById('templateModal').classList.remove('show');
-
   const rows = document.querySelectorAll('#templateList tr');
   const actionBar = document.getElementById('templateActionBar');
+
   const editBtn = document.getElementById('editTemplateBtn');
   const favoriteBtn = document.getElementById('favoriteActionBtn');
   const trashBtn = document.getElementById('trashActionBtn');
+  const deleteForeverBtn = document.getElementById('deleteForeverBtn');
 
   rows.forEach(row => {
     row.addEventListener('click', () => {
       const id = row.dataset.id;
       const isFavorite = row.dataset.favorite === '1';
+      const isTrash = row.dataset.trash === '1';
 
       if (activeTemplateId === id) {
         activeTemplateId = null;
@@ -70,57 +82,70 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       activeTemplateId = id;
+      activeIsTrash = isTrash;
+
       row.insertAdjacentElement('afterend', actionBar);
       actionBar.style.display = 'table-row';
 
-      favoriteBtn.textContent = isFavorite ? '즐겨찾기 해제' : '즐겨찾기';
+      if (isTrash) {
+        if (editBtn) editBtn.style.display = 'none';
+        if (favoriteBtn) favoriteBtn.style.display = 'none';
+        if (trashBtn) trashBtn.textContent = '복원하기';
+        if (deleteForeverBtn) deleteForeverBtn.style.display = 'inline-block';
+      } else {
+        if (editBtn) editBtn.style.display = 'inline-block';
+        if (favoriteBtn) {
+          favoriteBtn.style.display = 'inline-block';
+          favoriteBtn.textContent = isFavorite ? '즐겨찾기 해제' : '즐겨찾기';
+        }
+        if (trashBtn) trashBtn.textContent = '휴지통';
+        if (deleteForeverBtn) deleteForeverBtn.style.display = 'none';
+      }
     });
   });
 
-  editBtn.addEventListener('click', () => {
-    if (!activeTemplateId) return;
-    location.href = `edit.php?id=${activeTemplateId}`;
-  });
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      if (!activeTemplateId) return;
+      location.href = `edit.php?id=${activeTemplateId}`;
+    });
+  }
 
-  favoriteBtn.addEventListener('click', () => {
-    if (!activeTemplateId) return;
+  if (favoriteBtn) {
+    favoriteBtn.addEventListener('click', () => {
+      if (!activeTemplateId) return;
+      toggleFavorite([activeTemplateId]);
+    });
+  }
 
-    toggleFavorite([activeTemplateId]);
-  });
+  if (trashBtn) {
+    trashBtn.addEventListener('click', () => {
+      if (!activeTemplateId) return;
 
+      const message = activeIsTrash
+        ? '이 템플릿을 복원하시겠습니까?'
+        : '해당 템플릿을 휴지통으로 보내시겠습니까?';
 
-  trashBtn.addEventListener('click', () => {
-    if (!activeTemplateId) return;
-    if (!confirm('해당 템플릿을 휴지통으로 보내시겠습니까?')) return;
+      if (!confirm(message)) return;
+      moveToTrash([activeTemplateId]);
+    });
+  }
 
-    moveToTrash([activeTemplateId]);
-  });
+  if (deleteForeverBtn) {
+    deleteForeverBtn.addEventListener('click', () => {
+      if (!activeTemplateId) return;
+
+      if (!confirm(
+        '⚠️ 이 템플릿을 완전히 삭제합니다.\n삭제 후에는 복구할 수 없습니다.'
+      )) return;
+
+      deleteForever([activeTemplateId]);
+    });
+  }
 });
-
-
-function getCheckedIds() {
-  return [...document.querySelectorAll('.row-check:checked')]
-    .map(c => c.closest('tr').dataset.id);
-}
-
-document.getElementById('toggleFavoriteBtn').addEventListener('click', () => {
-  const ids = getCheckedIds();
-  if (!ids.length) return alert('선택된 템플릿이 없습니다.');
-
-  toggleFavorite(ids);
-});
-
-document.getElementById('trashTemplateBtn').addEventListener('click', () => {
-  const ids = getCheckedIds();
-  if (!ids.length) return alert('선택된 템플릿이 없습니다.');
-  if (!confirm('선택한 템플릿을 휴지통으로 이동하시겠습니까?')) return;
-
-  moveToTrash(ids);
-});
-
 
 function toggleFavorite(ids) {
-  fetch('/easyj/api/templates/toggle_favorite', {
+  fetch('/easyj/api/template/toggle_favorite', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
@@ -130,10 +155,20 @@ function toggleFavorite(ids) {
 }
 
 function moveToTrash(ids) {
-  fetch('/easyj/api/templates/toggle_trash', {
+  fetch('/easyj/api/template/toggle_trash', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
   })
   .then(() => location.reload());
+}
+
+function deleteForever(ids) {
+  fetch('/easyj/api/template/delete_forever', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  })
+  .then(res => res.json())
+  .then(r => r.success && location.reload());
 }

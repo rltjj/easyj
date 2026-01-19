@@ -4,6 +4,8 @@ require_once BASE_PATH . '/includes/site_context.php';
 $activeMenu = 'templates';
 
 $categoryId = intval($_GET['category_id'] ?? 0);
+$isTrash = ($categoryId === -1);
+
 $keyword  = $_GET['keyword'] ?? '';
 $limit    = intval($_GET['limit'] ?? 10);
 $page     = max(1, intval($_GET['page'] ?? 1));
@@ -25,13 +27,25 @@ SELECT
   t.title,
   c.name AS category,
   t.created_at,
-  t.is_favorite
+  t.is_favorite,
+  t.is_deleted
 FROM templates t
 LEFT JOIN template_categories c ON t.category_id = c.id
 WHERE t.site_id = :site_id
-  AND t.is_deleted = 0
-  AND (:category_id = 0 OR t.category_id = :category_id)
-  AND t.title LIKE :keyword
+  AND (
+    (:is_trash = 1 AND t.is_deleted = 1)
+    OR
+    (:is_trash = 0 AND t.is_deleted = 0)
+  )
+  AND (
+    :category_id = 0
+    OR :is_trash = 1
+    OR t.category_id = :category_id
+  )
+    AND (
+    :keyword = ''
+    OR t.title LIKE :keyword
+  )
 ORDER BY t.sort_order ASC, t.id DESC
 LIMIT :offset, :limit
 ";
@@ -39,10 +53,12 @@ LIMIT :offset, :limit
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':site_id', $currentSiteId, PDO::PARAM_INT);
 $stmt->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
-$stmt->bindValue(':keyword', "%$keyword%");
+$stmt->bindValue(':is_trash', $isTrash ? 1 : 0, PDO::PARAM_INT);
+$stmt->bindValue(':keyword', $keyword !== '' ? "%$keyword%" : '');
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->execute();
+
 $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
@@ -67,23 +83,34 @@ $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <main class="content">
       <div class="toolbar">
         <select onchange="search()">
-          <option value="0">전체</option>
+          <option value="0" <?= $categoryId === 0 ? 'selected' : '' ?>>전체</option>
+
           <?php foreach ($categories as $cat): ?>
             <option value="<?= (int)$cat['id'] ?>"
               <?= $categoryId === (int)$cat['id'] ? 'selected' : '' ?>>
               <?= htmlspecialchars($cat['name']) ?>
             </option>
           <?php endforeach; ?>
+
+          <option value="-1" <?= $categoryId === -1 ? 'selected' : '' ?>>
+            휴지통
+          </option>
         </select>
 
         <input type="text" id="keyword" placeholder="제목 검색" value="<?= htmlspecialchars($keyword) ?>">
         <button onclick="search()">검색</button>
 
         <div class="right">
-          <button onclick="setLimit(10)">10개씩</button>
-          <button onclick="setLimit(20)">20개씩</button>
+          <!-- <button onclick="setLimit(10)">10개씩</button>
+          <button onclick="setLimit(20)">20개씩</button> -->
         </div>
       </div>
+
+      <?php if ($isTrash): ?>
+        <div class="trash-notice">
+          🗑 휴지통에 있는 템플릿입니다. 복원하거나 완전 삭제할 수 있습니다.
+        </div>
+      <?php endif; ?>
 
       <?php if ($role === 'ADMIN'): ?>
         <div class="top-action">
@@ -113,7 +140,7 @@ $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <tbody id="templateList">
           <?php foreach ($templates as $t): ?>
-          <tr data-id="<?= $t['id'] ?>" data-favorite="<?= $t['is_favorite'] ?>">
+          <tr data-id="<?= $t['id'] ?>" data-favorite="<?= $t['is_favorite'] ?>" data-trash="<?= $t['is_deleted'] ?>" >
             <td><input type="checkbox" class="row-check"></td>
             <td class="title"><?= htmlspecialchars($t['title']) ?></td>
             <td><?= htmlspecialchars($t['category']) ?></td>
@@ -125,9 +152,14 @@ $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <tbody>
           <tr id="templateActionBar" style="display:none;">
             <td colspan="4" class="action-bar">
+              <?php if ($role === 'ADMIN'): ?>
               <button id="editTemplateBtn">내용 확인 및 수정</button>
+              <?php endif; ?>
               <button id="favoriteActionBtn">즐겨찾기</button>
               <button id="trashActionBtn">휴지통</button>
+              <?php if ($role === 'ADMIN'): ?>
+              <button id="deleteForeverBtn" class="danger">영구삭제</button>
+              <?php endif; ?>
             </td>
           </tr>
         </tbody>
