@@ -75,6 +75,16 @@ try {
             $_POST['agent_name'],
             $_POST['agent_phone']
         ]);
+
+        $stmt = $pdo->prepare("
+            INSERT INTO site_service
+            (site_id, is_enabled)
+            VALUES (?, ?)
+        ");
+        $stmt->execute([
+            $siteId,
+            0
+        ]);
     }
 
     $pdo->commit();

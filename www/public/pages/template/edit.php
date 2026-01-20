@@ -35,6 +35,26 @@ $fields = $pdo->prepare("
 ");
 $fields->execute([':tid' => $templateId]);
 $fields = $fields->fetchAll(PDO::FETCH_ASSOC);
+$fields = array_map(function ($f) {
+  return [
+    'id'          => $f['id'],
+    'template_id' => $f['template_id'],
+    'page_no'     => $f['page_no'],
+    'signer_order'=> $f['signer_order'],
+    'field_type'  => $f['field_type'],
+    'pos_x'       => $f['x'],
+    'pos_y'       => $f['y'],
+    'width'       => $f['width'],
+    'height'      => $f['height'],
+    'label'       => $f['label'],
+    'required'    => $f['required'],
+    'group_label' => $f['ch_plural'],
+    'min_select'  => $f['ch_min'],
+    'max_select'  => $f['ch_max'],
+    'font_size'   => $f['t_size'],
+    'text_align'  => $f['t_style'],
+  ];
+}, $fields);
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -46,106 +66,185 @@ $fields = $fields->fetchAll(PDO::FETCH_ASSOC);
 
 <style>
 body {
-  margin:0;
-  display:flex;
-  height:100vh;
-  font-family:sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    font-family: 'Pretendard', sans-serif;
+    background-color: #e2e8f0;
+    color: #334155;
 }
+
 .sidebar {
-  width:260px;
-  background:#f5f5f5;
-  padding:10px;
-  overflow:auto;
+    width: 240px;
+    background: #ffffff;
+    border-right: 1px solid #cbd5e1;
+    padding: 20px 15px;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
 }
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #0f172a;
+    border-bottom: 2px solid #0858F7;
+    padding-bottom: 10px;
+}
+
 .sidebar h3 {
-  margin:10px 0 5px;
+    font-size: 14px;
+    margin: 15px 0 8px;
+    color: #64748b;
 }
+
 .sidebar button {
-  width:100%;
-  margin:3px 0;
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
+
+.sidebar button:hover {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+    transform: translateX(4px);
+}
+
 .editor {
-  flex:1;
-  overflow:auto;
-  background:#ccc;
+    flex: 1;
+    overflow: auto;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
 .page {
-  position:relative;
-  margin:20px auto;
-  background:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.2);
+    position: relative;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+    border-radius: 4px;
 }
+
 .page.active {
-  outline:3px solid #4f46e5;
+    outline: 3px solid #0858F7;
 }
+
 .field {
-  position:absolute;
-  border:1px dashed #333;
-  background:#fff;
-  font-size:12px;
-  padding:3px;
-  cursor:move;
-  user-select:none;
-  box-sizing: border-box;
+    position: absolute;
+    border: 1px solid #4f46e5;
+    background: rgba(79, 70, 229, 0.1);
+    font-size: 11px;
+    color: #000000;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    box-sizing: border-box;
+    border-radius: 2px;
 }
+
 .field.selected {
-  border:2px solid red;
+    outline: 2px solid #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    z-index: 10;
 }
-.field.checkbox {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  font-weight:bold;
-  line-height:1;
-}
+
 .resize {
-  position:absolute;
-  width:10px;
-  height:10px;
-  right:-5px;
-  bottom:-5px;
-  background:#4f46e5;
-  cursor:se-resize;
-}
-.select-box {
-  position:absolute;
-  border:1px dashed #4f46e5;
-  background:rgba(79,70,229,.15);
-  pointer-events:none;
-  z-index:999;
-}
-.save-btn {
-  position:fixed;
-  bottom:20px;
-  left:20px;
-  padding:10px 20px;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    right: -4px;
+    bottom: -4px;
+    background: #4f46e5;
+    border-radius: 50%;
+    cursor: se-resize;
 }
 
 .prop-panel {
-  width:260px;
-  background:#fafafa;
-  border-left:1px solid #ddd;
-  padding:10px;
-  overflow:auto;
+    width: 280px;
+    background: #ffffff;
+    border-left: 1px solid #cbd5e1;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.05);
 }
 
 .prop-panel h3 {
-  margin-top:0;
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #1e293b;
 }
 
 .prop-panel label {
-  display:block;
-  margin-bottom:10px;
-  font-size:13px;
+    display: block;
+    margin-bottom: 15px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
 }
 
 .prop-panel input,
 .prop-panel select {
-  width:100%;
-  padding:4px;
-  box-sizing:border-box;
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
 }
+
+.prop-panel input:focus {
+    border-color: #4f46e5;
+    ring: 2px #4f46e5;
+}
+
+.save-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 12px 24px;
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 1000;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    background: #1e293b;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+#noSelect {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 50px;
+    font-style: italic;
+}
+
+.select-box {
+    position: absolute;
+    border: 1px dashed #0858F7;
+    background: rgba(8, 88, 247, 0.15);
+    pointer-events: none;
+    z-index: 999;
+}
+
 </style>
 </head>
 
@@ -156,13 +255,13 @@ body {
 
   <?php foreach ($signers as $s): ?>
     <h3>서명자 <?= $s['signer_order'] ?></h3>
-    <button onclick="addField('TEXT', <?= $s['id'] ?>)">텍스트</button>
-    <button onclick="addField('CHECKBOX', <?= $s['id'] ?>)">체크박스</button>
-    <button onclick="addField('SIGN', <?= $s['id'] ?>)">서명</button>
-    <button onclick="addField('STAMP', <?= $s['id'] ?>)">날인</button>
-    <button onclick="addField('DATE_Y', <?= $s['id'] ?>)">날짜(연)</button>
-    <button onclick="addField('DATE_M', <?= $s['id'] ?>)">날짜(월)</button>
-    <button onclick="addField('DATE_D', <?= $s['id'] ?>)">날짜(일)</button>
+    <button onclick="addField('TEXT', <?= $s['signer_order'] ?>)">텍스트</button>
+    <button onclick="addField('CHECKBOX', <?= $s['signer_order'] ?>)">체크박스</button>
+    <button onclick="addField('SIGN', <?= $s['signer_order'] ?>)">서명</button>
+    <button onclick="addField('STAMP', <?= $s['signer_order'] ?>)">날인</button>
+    <button onclick="addField('DATE_Y', <?= $s['signer_order'] ?>)">날짜(연)</button>
+    <button onclick="addField('DATE_M', <?= $s['signer_order'] ?>)">날짜(월)</button>
+    <button onclick="addField('DATE_D', <?= $s['signer_order'] ?>)">날짜(일)</button>
     <hr>
   <?php endforeach; ?>
 </div>
@@ -214,9 +313,10 @@ body {
       <label>
         정렬
         <select id="propAlign">
-          <option value="left">왼쪽</option>
-          <option value="center">가운데</option>
-          <option value="right">오른쪽</option>
+          <option value="LEFT">왼쪽</option>
+          <option value="CENTER">가운데</option>
+          <option value="RIGHT">오른쪽</option>
+          <option value="BOTH">양쪽 정렬</option>
         </select>
       </label>
     </div>
@@ -238,6 +338,19 @@ const propMin      = document.getElementById('propMin');
 const propMax      = document.getElementById('propMax');
 const propFontSize = document.getElementById('propFontSize');
 const propAlign    = document.getElementById('propAlign');
+
+const SIGNER_COLORS = {
+  1: { bg: '#FEF3C7', border: '#f5d20b' }, 
+  2: { bg: '#DBEAFE', border: '#5774f5' },
+  3: { bg: '#ebffdd', border: '#9af65c' },
+  4: { bg: '#ffe0e0', border: '#ff4d4d' },
+  5: { bg: '#ebd6ff', border: '#a94dff' },
+  6: { bg: '#cfccf8', border: '#2617ff' },
+  7: { bg: '#fcdaf1', border: '#f02aae' },
+  8: { bg: '#ffffe5', border: '#f6fa21' },
+};
+
+const SIGNERS = <?= json_encode($signers, JSON_UNESCAPED_UNICODE) ?>;
 
 propLabel.oninput = () => {
   selectedFields.forEach(el => {
@@ -336,7 +449,7 @@ function renderFields() {
   });
 }
 
-function addField(type, signerId) {
+function addField(type, signerOrder) {
   if (!activePage) {
     alert('페이지를 먼저 선택하세요');
     return;
@@ -345,32 +458,36 @@ function addField(type, signerId) {
   let width = 60;
   let height = 30;
   let label = type;
+  let field_type = type;
 
   if (type === 'CHECKBOX') {
     width = 22;
     height = 22;
-    label = '';
+    label = 'CHECKBOX';
   }
 
   if (type === 'DATE_Y') {
     width = 70;
     label = 'YYYY';
+    field_type = 'DATE';
   }
 
   if (type === 'DATE_M') {
     width = 45;
     label = 'MM';
+    field_type = 'DATE';
   }
 
   if (type === 'DATE_D') {
     width = 45;
     label = 'DD';
+    field_type = 'DATE';
   }
 
   const field = {
     id: 'new_' + Date.now(),
     field_type: type,
-    signer_id: signerId,
+    signer_order: signerOrder,
     label,
     page_no: activePage.dataset.page,
     pos_x: 50,
@@ -389,28 +506,31 @@ function createFieldEl(f, page) {
   el.className = 'field';
   el.dataset.id = f.id;
   el.dataset.type = f.field_type;
-  el.dataset.signer = f.signer_id;
+  el.dataset.signerOrder = f.signer_order;
   el.dataset.page = f.page_no;
   el.dataset.label = f.label || '';
+
+  const order = parseInt(f.signer_order) || 1;
+  const color = SIGNER_COLORS[order] || { bg: '#ffffff', border: '#888' };
+  el.style.background = color.bg;
+  el.style.borderColor = color.border;
 
   el.style.left = f.pos_x + 'px';
   el.style.top  = f.pos_y + 'px';
   el.style.width = f.width + 'px';
   el.style.height = f.height + 'px';
   el.style.textAlign = 'center';
-
+  el.style.fontSize = (f.font_size || 12) + 'px';
+  el.dataset.align = f.text_align || 'left';
   el.dataset.required = f.required ?? '0';
   el.dataset.group = f.group_label ?? '';
   el.dataset.min = f.min_select ?? '';
   el.dataset.max = f.max_select ?? '';
-  el.dataset.fontSize = f.font_size ?? '12';
-  el.style.fontSize = el.dataset.fontSize + 'px';
-  el.dataset.align = f.text_align ?? '';
 
   if (f.field_type === 'CHECKBOX') {
     el.classList.add('checkbox');
     el.innerHTML = '□';
-
+    el.dataset.type = 'CHECKBOX';
   } else if (
     f.field_type === 'DATE_Y' ||
     f.field_type === 'DATE_M' ||
@@ -558,6 +678,10 @@ function setActivePage(page) {
 }
 
 document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    return;
+  }
 
   if (!selectedFields.length) return;
 
@@ -589,9 +713,16 @@ document.addEventListener('keydown', e => {
     if (!selectedFields.length) return;
     const base = selectedFields[0];
 
-    copiedField = {
-      type: base.dataset.type,
-      signer: base.dataset.signer,
+     copiedField = {
+      field_type: base.dataset.type,
+      signer_order: base.dataset.signerOrder,
+      label: base.dataset.label,
+      required: base.dataset.required,
+      group_label: base.dataset.group,
+      min_select: base.dataset.min,
+      max_select: base.dataset.max,
+      font_size: base.dataset.fontSize,
+      text_align: base.dataset.align,
       width: base.offsetWidth,
       height: base.offsetHeight
     };
@@ -604,9 +735,15 @@ document.addEventListener('keydown', e => {
 
     const f = {
       id: 'new_' + Date.now(),
-      field_type: copiedField.type,
-      signer_id: copiedField.signer,
-      label: '',
+      field_type: copiedField.field_type,
+      signer_order: copiedField.signer_order,
+      label: copiedField.label,
+      required: copiedField.required,
+      group_label: copiedField.group_label,
+      min_select: copiedField.min_select,
+      max_select: copiedField.max_select,
+      font_size: copiedField.font_size,
+      text_align: copiedField.text_align,
       page_no: activePage.dataset.page,
       pos_x: parseInt(base.style.left) + 10,
       pos_y: parseInt(base.style.top) + 10,
@@ -631,9 +768,9 @@ function saveFields() {
       data.push({
         id: el.dataset.id,
         template_id: TEMPLATE_ID,
-        signer_id: el.dataset.signer,
-        field_type: el.dataset.type,
-        label: el.dataset.type === 'CHECKBOX' ? '' : el.textContent,
+        signer_order: el.dataset.signerOrder,
+        field_type: el.dataset.type, 
+        label: el.dataset.label,
         page_no: pageNo,
         pos_x: parseInt(el.style.left),
         pos_y: parseInt(el.style.top),
@@ -649,13 +786,16 @@ function saveFields() {
     });
   });
 
-  fetch('/easyj/api/templates/save_fields.php', {
+  fetch('/easyj/api/template/save_fields', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ template_id:TEMPLATE_ID, fields:data })
   })
   .then(r=>r.json())
-  .then(r=>alert(r.message || '저장 완료'));
+  .then(r => {
+    alert(r.message || '저장 완료');
+    location.href = 'index.php';
+  });
 }
 
 let selectBox = null;
