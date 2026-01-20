@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const actionBar = document.getElementById('templateActionBar');
 
   const editBtn = document.getElementById('editTemplateBtn');
+  const signBtn = document.getElementById('signBtn');
   const favoriteBtn = document.getElementById('favoriteActionBtn');
   const trashBtn = document.getElementById('trashActionBtn');
   const deleteForeverBtn = document.getElementById('deleteForeverBtn');
@@ -108,6 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
     editBtn.addEventListener('click', () => {
       if (!activeTemplateId) return;
       location.href = `edit.php?id=${activeTemplateId}`;
+    });
+  }
+
+  if (signBtn) {
+    signBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeTemplateId) return;
+      location.href = `setup.php?id=${activeTemplateId}`;
     });
   }
 

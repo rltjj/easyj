@@ -101,8 +101,8 @@ $templates = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button onclick="search()">검색</button>
 
         <div class="right">
-          <!-- <button onclick="setLimit(10)">10개씩</button>
-          <button onclick="setLimit(20)">20개씩</button> -->
+          <button onclick="setLimit(10)">10개씩</button>
+          <button onclick="setLimit(20)">20개씩</button>
         </div>
       </div>
 

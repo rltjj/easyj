@@ -53,3 +53,20 @@ if (!in_array($_SESSION['role'], ['ADMIN', 'OPERATOR', 'STAFF'])) {
     http_response_code(403);
     exit('권한 없음');
 }
+
+$stmt = $pdo->prepare("
+  SELECT 
+    is_enabled,
+    service_start,
+    service_end,
+    max_contract_count,
+    used_contract_count
+  FROM site_service
+  WHERE site_id = :site_id
+  LIMIT 1
+");
+$stmt->execute([':site_id' => $currentSiteId]);
+
+$siteService = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$siteServiceEnabled = (int)($siteService['is_enabled'] ?? 0);

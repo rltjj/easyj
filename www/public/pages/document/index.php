@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../../bootstrap.php';
 require_once BASE_PATH . '/includes/site_context.php';
-$activeMenu = 'file';
+$activeMenu = 'document';
 ?>
 <!DOCTYPE html>
 <html lang="ko">
