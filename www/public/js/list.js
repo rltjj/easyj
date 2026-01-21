@@ -176,8 +176,18 @@ function deleteForever(ids) {
   fetch('/easyj/api/template/delete_forever', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids })
+    body: JSON.stringify({ ids: ids })
   })
   .then(res => res.json())
-  .then(r => r.success && location.reload());
+  .then(r => {
+    if (r.success) {
+      location.reload();
+    } else {
+      alert(r.message || '삭제 실패');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('서버 응답 오류');
+  });
 }

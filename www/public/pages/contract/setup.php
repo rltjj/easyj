@@ -247,7 +247,12 @@ $agencyName = $stmt->fetchColumn();
         <input type="hidden" name="signers[<?= $order ?>][role]" value="SITE">
 
         <label>소속</label>
-        <input type="text" value="<?= htmlspecialchars($displayCompany) ?>" readonly>
+        <input type="text"
+          value="<?= htmlspecialchars($displayCompany) ?>"
+          readonly>
+        <input type="hidden"
+          name="signers[<?= $order ?>][company_name]"
+          value="<?= htmlspecialchars($displayCompany, ENT_QUOTES, 'UTF-8') ?>">
 
         <label>성명</label>
         <input type="text"

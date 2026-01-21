@@ -43,6 +43,25 @@ if ($stmt->fetchColumn() > 0) {
 }
 
 $stmt = $pdo->prepare("
+  SELECT site_id
+  FROM site_staff
+  WHERE user_id = :user_id
+  LIMIT 1
+");
+$stmt->execute([
+  'user_id' => $user['id']
+]);
+$existingSiteId = $stmt->fetchColumn();
+
+if ($existingSiteId) {
+  if ($existingSiteId == $siteId) {
+    die('이미 해당 현장에 등록된 직원입니다.');
+  } else {
+    die('해당 직원은 이미 다른 현장에 소속되어 있습니다.');
+  }
+}
+
+$stmt = $pdo->prepare("
   INSERT INTO site_staff (site_id, user_id, joined_at)
   VALUES (:site_id, :user_id, NOW())
 ");

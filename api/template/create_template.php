@@ -141,7 +141,7 @@ try {
                     ':signer_order' => $signerOrder,
                     ':title' => $attTitle,
                     ':description' => $att['description'] ?? '',
-                    ':required' => !empty($att['required']) ? 1 : 0
+                    ':required' => (int)($att['required'] ?? 0)
                 ]);
             }
         }

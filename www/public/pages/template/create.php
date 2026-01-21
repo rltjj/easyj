@@ -103,11 +103,10 @@ if ($siteId) {
 
 <template id="attachmentTemplate">
   <div class="attachment-box">
-    <input type="hidden" name="attachments[][signer_order]" class="attachment-signer-order">
 
     <div class="form-group">
       <label>필수 여부</label>
-      <select name="attachments[][required]">
+      <select name="signers[__INDEX__][attachments][__ATT_INDEX__][required]">
         <option value="1">필수</option>
         <option value="0">선택</option>
       </select>
@@ -115,12 +114,14 @@ if ($siteId) {
 
     <div class="form-group">
       <label>제목</label>
-      <input type="text" name="signers[__INDEX__][attachments][][title]">
+      <input type="text"
+        name="signers[__INDEX__][attachments][__ATT_INDEX__][title]">
     </div>
 
     <div class="form-group">
       <label>설명</label>
-      <input type="text" name="signers[__INDEX__][attachments][][description]">
+      <input type="text"
+        name="signers[__INDEX__][attachments][__ATT_INDEX__][description]">
     </div>
 
     <button type="button" onclick="removeAttachment(this)">삭제</button>
@@ -183,10 +184,16 @@ function reorderSigners() {
 
 function addAttachment(btn) {
   const signerBox = btn.closest('.signer-box');
-  const signerIndex = [...document.querySelectorAll('.signer-box')].indexOf(signerBox);
+  const signerIndex =
+    [...document.querySelectorAll('.signer-box')].indexOf(signerBox);
+
+  const attIndex =
+    signerBox.querySelectorAll('.attachment-box').length;
 
   const tpl = document.getElementById('attachmentTemplate')
-    .innerHTML.replaceAll('__INDEX__', signerIndex);
+    .innerHTML
+    .replaceAll('__INDEX__', signerIndex)
+    .replaceAll('__ATT_INDEX__', attIndex);
 
   const wrapper = document.createElement('div');
   wrapper.innerHTML = tpl;
