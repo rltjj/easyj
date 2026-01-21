@@ -259,6 +259,7 @@ body {
     <button onclick="addField('CHECKBOX', <?= $s['signer_order'] ?>)">체크박스</button>
     <button onclick="addField('SIGN', <?= $s['signer_order'] ?>)">서명</button>
     <button onclick="addField('STAMP', <?= $s['signer_order'] ?>)">날인</button>
+    <button onclick="addField('NUM', <?= $s['signer_order'] ?>)">숫자</button>
     <button onclick="addField('DATE_Y', <?= $s['signer_order'] ?>)">날짜(연)</button>
     <button onclick="addField('DATE_M', <?= $s['signer_order'] ?>)">날짜(월)</button>
     <button onclick="addField('DATE_D', <?= $s['signer_order'] ?>)">날짜(일)</button>
@@ -466,6 +467,13 @@ function addField(type, signerOrder) {
     label = 'CHECKBOX';
   }
 
+  if (type === 'NUM') {
+    width = 80;
+    height = 30;
+    label = 'NUM';
+    field_type = 'NUM';
+  }
+
   if (type === 'DATE_Y') {
     width = 70;
     label = 'YYYY';
@@ -531,14 +539,21 @@ function createFieldEl(f, page) {
     el.classList.add('checkbox');
     el.innerHTML = '□';
     el.dataset.type = 'CHECKBOX';
-  } else if (
+  } else if (f.field_type === 'NUM') {
+  el.textContent = f.label || '0';
+  el.style.fontSize = '12px';
+
+  const resize = document.createElement('div');
+  resize.className = 'resize';
+  el.appendChild(resize);
+  makeResizable(el, resize, page);
+} else if (
     f.field_type === 'DATE_Y' ||
     f.field_type === 'DATE_M' ||
     f.field_type === 'DATE_D'
   ) {
     el.textContent = f.label;
     el.style.fontSize = '12px';
-    el.style.background = '#fdfdfd';
 
     const resize = document.createElement('div');
     resize.className = 'resize';
@@ -644,7 +659,7 @@ function select(el, multi = false) {
 function showProps(el) {
   document.getElementById('noSelect').style.display = 'none';
   document.getElementById('fieldProps').style.display = 'block';
-
+    
   document.getElementById('propLabel').value = el.dataset.label || '';
   document.getElementById('propRequired').value = el.dataset.required || '0';
 

@@ -19,7 +19,8 @@ form.addEventListener('submit', async (e) => {
 
     const res = await fetch('/easyj/api/auth/login', {
       method: 'POST',
-      body: formData
+      body: formData,
+      credentials: 'same-origin'
     });
 
     const data = await res.json();
