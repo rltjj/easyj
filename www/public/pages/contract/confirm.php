@@ -25,63 +25,196 @@ ksort($signers);
 <head>
 <meta charset="UTF-8">
 <title>문서 설정 확인</title>
+<style>
+    body {
+        font-family: 'Pretendard', sans-serif;
+        background: #f8fafc;
+        margin: 0;
+        padding: 20px;
+        color: #334155;
+    }
+
+    .container {
+        max-width: 650px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        font-size: 22px;
+        text-align: center;
+        margin-bottom: 30px;
+        color: #1e293b;
+    }
+
+    h3 {
+        font-size: 15px;
+        color: #4A90E2;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
+        margin: 30px 0 15px;
+    }
+
+    .summary-box {
+        background: #f1f5f9;
+        padding: 15px 20px;
+        border-radius: 8px;
+    }
+
+    .info-line {
+        display: flex;
+        margin: 8px 0;
+        font-size: 15px;
+    }
+
+    .info-line .label {
+        width: 80px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .info-line .value {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .signer-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 12px;
+        position: relative;
+    }
+
+    .signer-card strong {
+        display: block;
+        font-size: 14px;
+        color: #475569;
+        margin-bottom: 10px;
+    }
+
+    .signer-detail {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-item small {
+        color: #94a3b8;
+        font-size: 11px;
+        margin-bottom: 2px;
+    }
+
+    .proxy-tag {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #fee2e2;
+        color: #ef4444;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 10px;
+        margin-top: 40px;
+    }
+
+    button {
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        border: none;
+    }
+
+    .btn-back {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .btn-confirm {
+        background: #4A90E2;
+        color: #fff;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+</style>
 </head>
 <body>
 
-<h1>계약 정보 확인</h1>
+  <div class="container">
+    <h1>계약 정보 확인</h1>
 
-<form method="post" action="save_setup.php">
+    <form method="post" action="save_setup.php">
 
-  <input type="hidden" name="template_id" value="<?= $templateId ?>">
-  <input type="hidden" name="contract_title" value="<?= htmlspecialchars($title) ?>">
-  <input type="hidden" name="contract_complex" value="<?= htmlspecialchars($complex) ?>">
-  <input type="hidden" name="contract_building" value="<?= htmlspecialchars($building) ?>">
-  <input type="hidden" name="contract_unit" value="<?= htmlspecialchars($unit) ?>">
+      <input type="hidden" name="template_id" value="<?= $templateId ?>">
+      <input type="hidden" name="contract_title" value="<?= htmlspecialchars($title) ?>">
+      <input type="hidden" name="contract_complex" value="<?= htmlspecialchars($complex) ?>">
+      <input type="hidden" name="contract_building" value="<?= htmlspecialchars($building) ?>">
+      <input type="hidden" name="contract_unit" value="<?= htmlspecialchars($unit) ?>">
 
-  <h3>문서 정보</h3>
-  <p>문서명: <?= htmlspecialchars($title) ?></p>
-  <p>단지: <?= htmlspecialchars($complex) ?></p>
-  <p>동/호: <?= htmlspecialchars($building) ?> / <?= htmlspecialchars($unit) ?></p>
+      <h3>문서 정보</h3>
+      <p>문서명: <?= htmlspecialchars($title) ?></p>
+      <p>단지: <?= htmlspecialchars($complex) ?></p>
+      <p>동/호: <?= htmlspecialchars($building) ?> / <?= htmlspecialchars($unit) ?></p>
 
-  <hr>
+      <hr>
 
-  <h3>서명자</h3>
+      <h3>서명자</h3>
 
-  <?php foreach ($signers as $order => $s): ?>
+      <?php foreach ($signers as $order => $s): ?>
 
-    <?php
-      $isProxy = isset($s['is_proxy']) && $s['is_proxy'] == '1';
+        <?php
+          $isProxy = isset($s['is_proxy']) && $s['is_proxy'] == '1';
 
-      $displayName  = $isProxy
-        ? ($s['proxy_name'] ?? '')
-        : ($s['name'] ?? '');
+          $displayName  = $isProxy
+            ? ($s['proxy_name'] ?? '')
+            : ($s['name'] ?? '');
 
-      $displayPhone = $isProxy
-        ? ($s['proxy_phone'] ?? '')
-        : ($s['phone'] ?? '');
-    ?>
+          $displayPhone = $isProxy
+            ? ($s['proxy_phone'] ?? '')
+            : ($s['phone'] ?? '');
+        ?>
 
-    <div>
-      <strong>서명자 <?= $order ?></strong><br>
-      역할: <?= htmlspecialchars($s['role']) ?><br>
-      <?= $isProxy ? '대리인 성명' : '성명' ?>: <?= htmlspecialchars($displayName) ?><br>
-      연락처: <?= htmlspecialchars($displayPhone) ?>
-    </div>
+        <div>
+          <strong>서명자 <?= $order ?></strong><br>
+          역할: <?= htmlspecialchars($s['role']) ?><br>
+          <?= $isProxy ? '대리인 성명' : '성명' ?>: <?= htmlspecialchars($displayName) ?><br>
+          연락처: <?= htmlspecialchars($displayPhone) ?>
+        </div>
 
-    <?php foreach ($s as $k => $v): ?>
-      <input type="hidden"
-             name="signers[<?= $order ?>][<?= $k ?>]"
-             value="<?= htmlspecialchars($v) ?>">
-    <?php endforeach; ?>
+        <?php foreach ($s as $k => $v): ?>
+          <input type="hidden"
+                name="signers[<?= $order ?>][<?= $k ?>]"
+                value="<?= htmlspecialchars($v) ?>">
+        <?php endforeach; ?>
 
-    <hr>
+        <hr>
 
-  <?php endforeach; ?>
+      <?php endforeach; ?>
 
-  <button type="submit">확정하고 생성</button>
-  <button type="button" onclick="history.back()">수정</button>
+      <button type="submit">확정하고 생성</button>
+      <button type="button" onclick="history.back()">수정</button>
 
-</form>
-
+    </form>
+  </div>
 </body>
 </html>

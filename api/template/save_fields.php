@@ -94,7 +94,7 @@ try {
             throw new Exception('잘못된 signer_order');
         }
 
-        $tStyle = $fieldType === 'TEXT' ? ($f['text_align'] ?? 'LEFT') : null;
+        $tArray = $fieldType === 'TEXT' ? ($f['text_align'] ?? 'LEFT') : null;
 
         $ins->execute([
             ':template_id' => $templateId,
@@ -110,9 +110,9 @@ try {
             ':ch_plural'   => $chPlural,
             ':ch_min'      => $chMin,
             ':ch_max'      => $chMax,
-            ':t_style'     => $tStyle,
+            ':t_style'     => null,
             ':t_size'      => $f['font_size'] ?? null,
-            ':t_array'     => null,
+            ':t_array'     => $tArray,
             ':t_color'     => null
         ]);
     }

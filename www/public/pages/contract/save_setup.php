@@ -10,57 +10,36 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die('잘못된 접근');
 }
 
-$loginUserId = intval($_SESSION['user_id']);
-$siteId     = $_SESSION['site_id'];
-$templateId = intval($_POST['template_id']);
-$title      = trim($_POST['contract_title']);
-$complex    = trim($_POST['contract_complex']);
-$building   = trim($_POST['contract_building']);
-$unit       = trim($_POST['contract_unit']);
+$loginUserId = (int)$_SESSION['user_id'];
+$siteId      = (int)$_SESSION['site_id'];
+
+$templateId = (int)($_POST['template_id'] ?? 0);
+$title      = trim($_POST['contract_title'] ?? '');
+$complex    = trim($_POST['contract_complex'] ?? '');
+$building   = trim($_POST['contract_building'] ?? '');
+$unit       = trim($_POST['contract_unit'] ?? '');
 $signers    = $_POST['signers'] ?? [];
-$companyName = '';
-foreach ($signers as $s) {
-    if (($s['role'] ?? '') === 'SITE') {
-        $companyName = $s['company_name'] ?? '';
-        break;
-    }
-}
 
 if (!$templateId || !$title || empty($signers)) {
     die('필수 정보 누락');
 }
 
 $stmt = $pdo->prepare("
-    SELECT category_id
-    FROM templates
-    WHERE id = :id
-      AND site_id = :site_id
+    SELECT t.file_path, t.category_id, c.name AS category_name, c.sort_order
+    FROM templates t
+    JOIN template_categories c ON c.id = t.category_id
+    WHERE t.id = :id
+      AND t.site_id = :site_id
+      AND c.is_deleted = 0
 ");
 $stmt->execute([
-    ':id' => $templateId,
+    ':id'      => $templateId,
     ':site_id' => $siteId
 ]);
-$templateCategoryId = $stmt->fetchColumn();
 
-if (!$templateCategoryId) {
-    throw new Exception('템플릿 카테고리 없음');
-}
-
-$stmt = $pdo->prepare("
-    SELECT name, sort_order
-    FROM template_categories
-    WHERE id = :id
-      AND site_id = :site_id
-      AND is_deleted = 0
-");
-$stmt->execute([
-    ':id' => $templateCategoryId,
-    ':site_id' => $siteId
-]);
-$templateCategory = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$templateCategory) {
-    throw new Exception('템플릿 카테고리 정보 없음');
+$template = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$template) {
+    die('템플릿 정보 없음');
 }
 
 $stmt = $pdo->prepare("
@@ -71,36 +50,51 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([
     ':site_id' => $siteId,
-    ':name'    => $templateCategory['name']
+    ':name'    => $template['category_name']
 ]);
+
 $contractCategoryId = $stmt->fetchColumn();
 
 if (!$contractCategoryId) {
-
     $stmt = $pdo->prepare("
-        INSERT INTO contract_categories (
-            site_id,
-            name,
-            sort_order
-        ) VALUES (
-            :site_id,
-            :name,
-            :sort_order
-        )
+        INSERT INTO contract_categories (site_id, name, sort_order)
+        VALUES (:site_id, :name, :sort_order)
     ");
     $stmt->execute([
         ':site_id'    => $siteId,
-        ':name'       => $templateCategory['name'],
-        ':sort_order' => $templateCategory['sort_order']
+        ':name'       => $template['category_name'],
+        ':sort_order' => $template['sort_order']
     ]);
-
     $contractCategoryId = $pdo->lastInsertId();
 }
 
 ksort($signers);
 $totalSigners = count($signers);
 
-$documentUid = bin2hex(random_bytes(12));
+$companyName = '';
+foreach ($signers as $s) {
+    if (($s['role'] ?? '') === 'SITE') {
+        $companyName = $s['company_name'] ?? '';
+        break;
+    }
+}
+
+$documentUid = bin2hex(random_bytes(16));
+
+$src = BASE_PATH . $template['file_path'];
+$dstDir = BASE_PATH . '/storage/contracts/original';
+
+if (!is_dir($dstDir)) {
+    mkdir($dstDir, 0777, true);
+}
+
+$dst = $dstDir . '/' . $documentUid . '.pdf';
+
+if (!file_exists($src) || !copy($src, $dst)) {
+    die('계약 원본 PDF 복사 실패');
+}
+
+$originalFilePath = '/storage/contracts/original/' . $documentUid . '.pdf';
 
 $pdo->beginTransaction();
 
@@ -108,175 +102,101 @@ try {
 
     $stmt = $pdo->prepare("
         INSERT INTO contracts (
-            site_id,
-            template_id,
-            category_id,
-            document_uid,
-            company_name,
-            complex,
-            building,
-            unit,
-            title,
-            total_signers,
-            status,
-            current_signer_order,
-            created_at
+            site_id, template_id, category_id,
+            document_uid, original_file_path,
+            company_name, complex, building, unit,
+            title, total_signers,
+            status, current_signer_order, created_at
         ) VALUES (
-            :site_id,
-            :template_id,
-            :category_id,
-            :document_uid,
-            :company_name,
-            :complex,
-            :building,
-            :unit,
-            :title,
-            :total_signers,
-            'PROGRESS',
-            1,
-            NOW()
+            :site_id, :template_id, :category_id,
+            :document_uid, :original_file_path,
+            :company_name, :complex, :building, :unit,
+            :title, :total_signers,
+            'PROGRESS', 1, NOW()
         )
     ");
-
     $stmt->execute([
-        ':site_id'            => $siteId,
-        ':template_id'        => $templateId,
-        ':category_id'        => $contractCategoryId,
-        ':document_uid'       => $documentUid,
-        ':company_name'       => $companyName,
-        ':complex'            => $complex,
-        ':building'           => $building,
-        ':unit'               => $unit,
-        ':title'              => $title,
-        ':total_signers'      => $totalSigners
+        ':site_id'           => $siteId,
+        ':template_id'       => $templateId,
+        ':category_id'       => $contractCategoryId,
+        ':document_uid'      => $documentUid,
+        ':original_file_path'=> $originalFilePath,
+        ':company_name'      => $companyName,
+        ':complex'           => $complex,
+        ':building'          => $building,
+        ':unit'              => $unit,
+        ':title'             => $title,
+        ':total_signers'     => $totalSigners
     ]);
 
     $contractId = $pdo->lastInsertId();
 
     $stmtSigner = $pdo->prepare("
         INSERT INTO contract_signers (
-            contract_id,
-            signer_order,
-            signer_type,
-            user_id,
-            guest_identity_id,
-            is_proxy,
-            display_name,
-            display_phone,
-            proxy_identity_id
+            contract_id, signer_order, signer_type,
+            user_id, guest_identity_id,
+            is_proxy, display_name, display_phone, proxy_identity_id
         ) VALUES (
-            :contract_id,
-            :signer_order,
-            :signer_type,
-            :user_id,
-            :guest_identity_id,
-            :is_proxy,
-            :display_name,
-            :display_phone,
-            :proxy_identity_id
+            :contract_id, :signer_order, :signer_type,
+            :user_id, :guest_identity_id,
+            :is_proxy, :display_name, :display_phone, :proxy_identity_id
         )
     ");
 
     foreach ($signers as $order => $s) {
-
-        $isProxy = isset($s['is_proxy']) && $s['is_proxy'] == '1';
-        $isSite = ($s['role'] === 'SITE');
-
-        $displayName = $isProxy
-            ? ($s['proxy_name'] ?? '')
-            : ($s['name'] ?? '');
-
-        $displayPhone = $isProxy
-            ? ($s['proxy_phone'] ?? '')
-            : ($s['phone'] ?? '');
+        $isProxy = !empty($s['is_proxy']);
+        $isSite  = ($s['role'] === 'SITE');
 
         $stmtSigner->execute([
-            ':contract_id'        => $contractId,
-            ':signer_order'       => intval($order),
-            ':signer_type'        => $isSite ? 'SITE' : 'GUEST',
-            ':user_id'            => $isSite ? $loginUserId : null,
-            ':guest_identity_id'  => $s['role'] === 'GUEST' ? intval($s['guest_identity_id']) : null,
-            ':is_proxy'           => $isProxy ? 1 : 0,
-            ':display_name'       => $displayName,
-            ':display_phone'      => $displayPhone,
-            ':proxy_identity_id'  => $isProxy ? intval($s['proxy_identity_id'] ?? 0) : null
+            ':contract_id'       => $contractId,
+            ':signer_order'      => (int)$order,
+            ':signer_type'       => $isSite ? 'SITE' : 'GUEST',
+            ':user_id'           => $isSite ? $loginUserId : null,
+            ':guest_identity_id' => !$isSite ? (int)$s['guest_identity_id'] : null,
+            ':is_proxy'          => $isProxy ? 1 : 0,
+            ':display_name'      => $isProxy ? ($s['proxy_name'] ?? '') : ($s['name'] ?? ''),
+            ':display_phone'     => $isProxy ? ($s['proxy_phone'] ?? '') : ($s['phone'] ?? ''),
+            ':proxy_identity_id' => $isProxy ? (int)($s['proxy_identity_id'] ?? 0) : null
         ]);
     }
 
-    $stmt = $pdo->prepare("
+    $pdo->prepare("
         INSERT INTO contract_fields (
-            contract_id,
-            page_no,
-            signer_order,
-            field_type,
-            x,
-            y,
-            width,
-            height,
-            label,
-            required,
-            ch_plural,
-            ch_min,
-            ch_max,
-            t_style,
-            t_size,
-            t_array,
-            t_color
+            contract_id, page_no, signer_order,
+            field_type, x, y, width, height,
+            label, required,
+            ch_plural, ch_min, ch_max,
+            t_style, t_size, t_array, t_color
         )
         SELECT
-            :contract_id,
-            page_no,
-            signer_order,
-            field_type,
-            x,
-            y,
-            width,
-            height,
-            label,
-            required,
-            ch_plural,
-            ch_min,
-            ch_max,
-            t_style,
-            t_size,
-            t_array,
-            t_color
+            :contract_id, page_no, signer_order,
+            field_type, x, y, width, height,
+            label, required,
+            ch_plural, ch_min, ch_max,
+            t_style, t_size, t_array, t_color
         FROM template_fields
         WHERE template_id = :template_id
-    ");
-
-    $stmt->execute([
+    ")->execute([
         ':contract_id' => $contractId,
         ':template_id' => $templateId
     ]);
 
-    $stmt = $pdo->prepare("
+    $pdo->prepare("
         INSERT INTO contract_attachments (
-            contract_id,
-            signer_order,
-            title,
-            description,
-            required,
-            file_path,
-            uploaded_at
+            contract_id, signer_order,
+            title, description, required,
+            file_path, uploaded_at
         )
         SELECT
-            :contract_id,
-            signer_order,
-            title,
-            description,
-            required,
-            NULL,
-            NULL
+            :contract_id, signer_order,
+            title, description, required,
+            NULL, NULL
         FROM template_attachments
         WHERE template_id = :template_id
-    ");
-
-    $stmt->execute([
+    ")->execute([
         ':contract_id' => $contractId,
         ':template_id' => $templateId
     ]);
-
 
     $pdo->commit();
 
@@ -285,5 +205,5 @@ try {
     die('저장 실패: ' . $e->getMessage());
 }
 
-header("Location: ../document/index.php");
+header('Location: ../document/index.php');
 exit;

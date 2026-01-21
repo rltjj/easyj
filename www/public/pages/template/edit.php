@@ -52,7 +52,7 @@ $fields = array_map(function ($f) {
     'min_select'  => $f['ch_min'],
     'max_select'  => $f['ch_max'],
     'font_size'   => $f['t_size'],
-    'text_align'  => $f['t_style'],
+    'text_align'  => $f['t_array'],
   ];
 }, $fields);
 ?>
@@ -517,6 +517,7 @@ function createFieldEl(f, page) {
   el.dataset.signerOrder = f.signer_order;
   el.dataset.page = f.page_no;
   el.dataset.label = f.label || '';
+  el.dataset.fontSize = f.font_size || 12;
 
   const order = parseInt(f.signer_order) || 1;
   const color = SIGNER_COLORS[order] || { bg: '#ffffff', border: '#888' };
