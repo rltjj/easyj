@@ -25,7 +25,12 @@ if (!$templateId || !$title || empty($signers)) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT t.file_path, t.category_id, c.name AS category_name, c.sort_order
+    SELECT
+        t.file_path,
+        t.category_id,
+        t.title AS template_title,
+        c.name AS category_name,
+        c.sort_order
     FROM templates t
     JOIN template_categories c ON c.id = t.category_id
     WHERE t.id = :id
@@ -61,11 +66,47 @@ if (!$contractCategoryId) {
         VALUES (:site_id, :name, :sort_order)
     ");
     $stmt->execute([
-        ':site_id'    => $siteId, 
-        ':name'       => $template['category_name'], 
+        ':site_id'    => $siteId,
+        ':name'       => $template['category_name'],
         ':sort_order' => $template['sort_order']
     ]);
     $contractCategoryId = $pdo->lastInsertId();
+}
+
+$stmt = $pdo->prepare("
+    SELECT id
+    FROM contract_template
+    WHERE site_id = :site_id
+      AND title = :title
+    LIMIT 1
+");
+$stmt->execute([
+    ':site_id' => $siteId,
+    ':title'   => $template['template_title']
+]);
+
+$contractTemplateId = $stmt->fetchColumn();
+
+if (!$contractTemplateId) {
+    $stmt = $pdo->prepare("
+        INSERT INTO contract_template (
+            site_id,
+            title,
+            sort_order,
+            created_at
+        ) VALUES (
+            :site_id,
+            :title,
+            0,
+            NOW()
+        )
+    ");
+    $stmt->execute([
+        ':site_id' => $siteId,
+        ':title'   => $template['template_title']
+    ]);
+
+    $contractTemplateId = $pdo->lastInsertId();
 }
 
 ksort($signers);
@@ -102,44 +143,79 @@ try {
 
     $stmt = $pdo->prepare("
         INSERT INTO contracts (
-            site_id, template_id, category_id,
-            document_uid, original_file_path,
-            company_name, complex, building, unit,
-            title, total_signers,
-            status, current_signer_order, created_at
+            site_id,
+            contract_template_id,
+            template_id,
+            category_id,
+            document_uid,
+            original_file_path,
+            company_name,
+            complex,
+            building,
+            unit,
+            title,
+            total_signers,
+            status,
+            current_signer_order,
+            created_at,
+            updated_at
         ) VALUES (
-            :site_id, :template_id, :category_id,
-            :document_uid, :original_file_path,
-            :company_name, :complex, :building, :unit,
-            :title, :total_signers,
-            'PROGRESS', 1, NOW()
+            :site_id,
+            :contract_template_id,
+            :template_id,
+            :category_id,
+            :document_uid,
+            :original_file_path,
+            :company_name,
+            :complex,
+            :building,
+            :unit,
+            :title,
+            :total_signers,
+            'PROGRESS',
+            1,
+            NOW(),
+            NOW()
         )
     ");
     $stmt->execute([
-        ':site_id'           => $siteId,
-        ':template_id'       => $templateId,
-        ':category_id'       => $contractCategoryId,
-        ':document_uid'      => $documentUid,
-        ':original_file_path'=> $originalFilePath,
-        ':company_name'      => $companyName,
-        ':complex'           => $complex,
-        ':building'          => $building,
-        ':unit'              => $unit,
-        ':title'             => $title,
-        ':total_signers'     => $totalSigners
+        ':site_id'              => $siteId,
+        ':contract_template_id' => $contractTemplateId,
+        ':template_id'          => $templateId,
+        ':category_id'          => $contractCategoryId,
+        ':document_uid'         => $documentUid,
+        ':original_file_path'   => $originalFilePath,
+        ':company_name'         => $companyName,
+        ':complex'              => $complex,
+        ':building'             => $building,
+        ':unit'                 => $unit,
+        ':title'                => $title,
+        ':total_signers'        => $totalSigners
     ]);
 
     $contractId = $pdo->lastInsertId();
 
     $stmtSigner = $pdo->prepare("
         INSERT INTO contract_signers (
-            contract_id, signer_order, signer_type,
-            user_id, guest_identity_id,
-            is_proxy, display_name, display_phone, proxy_identity_id
+            contract_id,
+            signer_order,
+            signer_type,
+            user_id,
+            guest_identity_id,
+            is_proxy,
+            display_name,
+            display_phone,
+            proxy_identity_id
         ) VALUES (
-            :contract_id, :signer_order, :signer_type,
-            :user_id, :guest_identity_id,
-            :is_proxy, :display_name, :display_phone, :proxy_identity_id
+            :contract_id,
+            :signer_order,
+            :signer_type,
+            :user_id,
+            :guest_identity_id,
+            :is_proxy,
+            :display_name,
+            :display_phone,
+            :proxy_identity_id
         )
     ");
 
@@ -162,16 +238,24 @@ try {
 
     $pdo->prepare("
         INSERT INTO contract_fields (
-            contract_id, page_no, signer_order,
-            field_type, x, y, width, height,
-            label, required,
+            contract_id,
+            page_no,
+            signer_order,
+            field_type,
+            x, y, width, height,
+            label,
+            required,
             ch_plural, ch_min, ch_max,
             t_style, t_size, t_array, t_color
         )
         SELECT
-            :contract_id, page_no, signer_order,
-            field_type, x, y, width, height,
-            label, required,
+            :contract_id,
+            page_no,
+            signer_order,
+            field_type,
+            x, y, width, height,
+            label,
+            required,
             ch_plural, ch_min, ch_max,
             t_style, t_size, t_array, t_color
         FROM template_fields
@@ -183,14 +267,22 @@ try {
 
     $pdo->prepare("
         INSERT INTO contract_attachments (
-            contract_id, signer_order,
-            title, description, required,
-            file_path, uploaded_at
+            contract_id,
+            signer_order,
+            title,
+            description,
+            required,
+            file_path,
+            uploaded_at
         )
         SELECT
-            :contract_id, signer_order,
-            title, description, required,
-            NULL, NULL
+            :contract_id,
+            signer_order,
+            title,
+            description,
+            required,
+            NULL,
+            NULL
         FROM template_attachments
         WHERE template_id = :template_id
     ")->execute([

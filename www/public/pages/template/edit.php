@@ -517,7 +517,7 @@ function createFieldEl(f, page) {
   el.dataset.signerOrder = f.signer_order;
   el.dataset.page = f.page_no;
   el.dataset.label = f.label || '';
-  el.dataset.fontSize = f.font_size || 12;
+  
 
   const order = parseInt(f.signer_order) || 1;
   const color = SIGNER_COLORS[order] || { bg: '#ffffff', border: '#888' };
@@ -529,7 +529,14 @@ function createFieldEl(f, page) {
   el.style.width = f.width + 'px';
   el.style.height = f.height + 'px';
   el.style.textAlign = 'center';
-  el.style.fontSize = (f.font_size || 12) + 'px';
+
+  if (f.field_type === 'TEXT') {
+    el.dataset.fontSize = f.font_size || 12;
+    el.style.fontSize = (f.font_size || 12) + 'px';
+  } else {
+    el.dataset.fontSize = '';
+  }
+  
   el.dataset.align = f.text_align || 'left';
   el.dataset.required = f.required ?? '0';
   el.dataset.group = f.group_label ?? '';
@@ -796,7 +803,10 @@ function saveFields() {
         group_label: el.dataset.group ?? '',
         min_select: el.dataset.min ?? null,
         max_select: el.dataset.max ?? null,
-        font_size: el.dataset.fontSize ?? null,
+        font_size:
+          el.dataset.type === 'TEXT'
+            ? el.dataset.fontSize
+            : null,
         text_align: el.dataset.align ?? 'left'
       });
     });

@@ -1,47 +1,49 @@
 .document-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-    }
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
 
-    .document-table th,
-    .document-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 14px;
-      text-align: left;
-    }
+.document-table th,
+.document-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+  text-align: left;
+}
 
-    .document-table th {
-      background: #f8fafc;
-      font-weight: 700;
-      color: #334155;
-    }
+.document-table .signers {
+  width: 100px;
+  max-width: 100px;
+  word-break: keep-all;
+  line-height: 1.6;
+}
 
-    .document-table tr:hover {
-      background: #f1f5f9;
-      cursor: pointer;
-    }
+.document-table th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: #334155;
+}
 
-    .status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
+.document-table tr:hover {
+  background: #f1f5f9;
+  cursor: pointer;
+}
 
-    .status.progress {
-      background: #e0f2fe;
-      color: #0369a1;
-    }
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
 
-    .status.done {
-      background: #dcfce7;
-      color: #166534;
-    }
+.status.progress {
+  background: #fee6c7;
+  color: #be1212;
+}
 
-    .status.wait {
-      background: #fef3c7;
-      color: #92400e;
-    }
+.status.done {
+  background: #e0f2fe;
+  color: #0369a1;
+}

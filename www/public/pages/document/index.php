@@ -29,6 +29,12 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([':site_id' => $currentSiteId]);
 $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$statusMap = [
+  'PROGRESS' => '진행',
+  'DONE'     => '완료'
+];
+
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -68,15 +74,45 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
 
         <?php foreach ($documents as $doc): ?>
-          <tr onclick="location.href='/public/pages/contract/view.php?id=<?= $doc['id'] ?>'">
+
+          <?php
+            $statusText  = $statusMap[$doc['status']] ?? $doc['status'];
+            $statusClass = strtolower($doc['status']);
+
+            if ($doc['status'] === 'DONE') {
+                $date = $doc['completed_at'] ?? $doc['updated_at'];
+            } else {
+                $date = $doc['updated_at'];
+            }
+
+            $signers = $doc['signer_names']
+              ? implode(',<br>', array_map('trim', explode(',', $doc['signer_names'])))
+              : '-';
+          ?>
+
+          <tr onclick="location.href='../contract/terms.php?id=<?= $doc['id'] ?>'">
             <td>
-              <span class="status <?= strtolower($doc['status']) ?>">
-                <?= htmlspecialchars($doc['status']) ?>
+              <span class="status <?= $statusClass ?>">
+                <?= $statusText ?>
               </span>
             </td>
             <td><?= htmlspecialchars($doc['title']) ?></td>
-            <td><?= htmlspecialchars($doc['signer_names'] ?? '-') ?></td>
-            <td><?= date('Y-m-d', strtotime($doc['updated_at'])) ?></td>
+            <td class="signers">
+              <?= $signers ?>
+            </td>
+            <td>
+              <?php
+                $date = null;
+
+                if ($doc['status'] === 'DONE') {
+                  $date = $doc['completed_at'];
+                } else {
+                  $date = $doc['updated_at'];
+                }
+              ?>
+
+              <?= $date ? date('Y-m-d', strtotime($date)) : '-' ?>
+            </td>
           </tr>
         <?php endforeach; ?>
 

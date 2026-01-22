@@ -70,6 +70,11 @@ try {
         if ($fieldType === 'CHECK') $fieldType = 'CHECKBOX';
         if (in_array($fieldType, ['DATE_Y', 'DATE_M', 'DATE_D'])) $fieldType = 'DATE';
 
+        $tSize = null;
+        if ($fieldType === 'TEXT') {
+            $tSize = isset($f['font_size']) ? intval($f['font_size']) : null;
+        }
+
         $label = $f['label'] ?? '';
         if ($f['field_type'] === 'CHECKBOX') $fieldType = 'CHECKBOX';
         if ($f['field_type'] === 'DATE_Y') $label = 'YYYY';
@@ -111,7 +116,7 @@ try {
             ':ch_min'      => $chMin,
             ':ch_max'      => $chMax,
             ':t_style'     => null,
-            ':t_size'      => $f['font_size'] ?? null,
+            ':t_size'      => $tSize,
             ':t_array'     => $tArray,
             ':t_color'     => null
         ]);
