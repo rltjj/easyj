@@ -11,7 +11,6 @@ if (!$contractId) {
     die('잘못된 접근');
 }
 
-/* 계약 + 현재 서명자 조회 */
 $stmt = $pdo->prepare("
     SELECT
         c.title AS contract_title,
@@ -30,6 +29,37 @@ $signer = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$signer) {
     die('계약 정보 없음');
+}
+
+$userId = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("
+    SELECT
+        c.title AS contract_title,
+        cs.signer_type,
+        cs.display_name,
+        cs.display_phone
+    FROM contracts c
+    JOIN contract_signers cs
+      ON cs.contract_id = c.id
+     AND cs.signer_order = c.current_signer_order
+     AND cs.user_id = :user_id
+    WHERE c.id = :contract_id
+      AND c.is_deleted = 0
+");
+$stmt->execute([
+    ':contract_id' => $contractId,
+    ':user_id'     => $userId
+]);
+
+$signer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$signer) {
+    echo "<script>
+        alert('이 문서에 대한 서명 권한이 없습니다.');
+        history.back();
+    </script>";
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -63,6 +93,19 @@ if (!$signer) {
   color: #007bff;
   text-decoration: underline;
   cursor: pointer;
+}
+
+button {
+    width: 100%;
+    height: 44px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 4px;
+    background: #4A90E2;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .btn-area { margin-top: 30px; text-align: right; }

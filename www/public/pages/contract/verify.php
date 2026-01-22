@@ -150,7 +150,29 @@ input[type="file"] {
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 14px;
+    display: flex;
+    align-items: center;
 }
+
+input[type="file"] {
+    line-height: 42px; 
+    padding-top: 0;
+    padding-bottom: 0;
+    background: #fff;
+    cursor: pointer;
+}
+
+/* input[type="file"]::file-selector-button {
+    height: 30px;
+    margin-top: 6px; 
+    margin-right: 10px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 12px;
+} */
 
 button {
     width: 100%;
@@ -158,7 +180,7 @@ button {
     margin-top: 15px;
     border: none;
     border-radius: 4px;
-    background: #4A90E2;
+    background: #007bff;
     color: #fff;
     font-size: 14px;
     font-weight: 600;
@@ -166,7 +188,7 @@ button {
 }
 
 button:hover {
-    background: #357ABD;
+    background: #0071eb;
 }
 
 button[onclick] {
@@ -207,7 +229,10 @@ hr {
 
 <p>본인 확인 방법을 선택해주세요.</p>
 
-<button onclick="alert('본인인증 API 연동 예정')">본인인증</button>
+<form method="post">
+    <input type="hidden" name="action" value="guest_verify">
+    <button type="submit">본인인증</button>
+</form>
 
 <hr>
 
