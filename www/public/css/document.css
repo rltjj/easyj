@@ -47,3 +47,68 @@
   background: #e0f2fe;
   color: #0369a1;
 }
+
+
+
+.document-filter {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.document-filter select,
+.document-filter input {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+}
+
+select[name="category_id"], 
+select[name="contract_template_id"] { width: 160px; }
+input[name="title"] { width: 220px; }
+
+input[name="complex"],
+input[name="building"],
+input[name="unit"] { width: 80px; }
+
+select[name="status"] { width: 120px; }
+input[type="date"] { width: 140px; }
+
+.filter-actions {
+    margin-top: 5px;
+    display: flex;
+    gap: 8px;
+}
+
+.document-filter button,
+.btn-reset {
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.document-filter button { background: #4A90E2; color: #fff; }
+.btn-reset { background: #f3f4f6; color: #6b7280; }
+
+.document-filter button:hover { background: #357ABD; }
+.btn-reset:hover { background: #e5e7eb; }
