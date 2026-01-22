@@ -61,8 +61,8 @@ if (!$contractCategoryId) {
         VALUES (:site_id, :name, :sort_order)
     ");
     $stmt->execute([
-        ':site_id'    => $siteId,
-        ':name'       => $template['category_name'],
+        ':site_id'    => $siteId, 
+        ':name'       => $template['category_name'], 
         ':sort_order' => $template['sort_order']
     ]);
     $contractCategoryId = $pdo->lastInsertId();

@@ -141,6 +141,8 @@ $stamps = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <main class="content">
+      <div id="noticeArea" class="notice hidden"></div>
+
       <?php
       $role = $_SESSION['role'];
       ?>
@@ -289,7 +291,7 @@ $stamps = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <div class="team-register">
             <h4>직원 등록</h4>
 
-            <form method="post" action="register_staff.php">
+            <form id="staffRegisterForm">
               <input type="hidden" name="site_id" value="<?= $currentSiteId ?>">
 
               <div class="form-row">
@@ -340,14 +342,12 @@ $stamps = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         in_array($_SESSION['role'], ['ADMIN','OPERATOR']) &&
                         $member['role'] === 'STAFF'
                       ): ?>
-                        <form method="post"
-                              action="remove_staff.php"
-                              onsubmit="return confirm('해당 직원을 현장에서 제거하시겠습니까?');"
-                              style="display:inline">
-                          <input type="hidden" name="site_id" value="<?= $currentSiteId ?>">
-                          <input type="hidden" name="user_id" value="<?= $member['id'] ?>">
-                          <button type="submit" class="btn-danger">제거</button>
-                        </form>
+                        <button
+                          type="button"
+                          class="btn-danger"
+                          onclick="removeStaff(<?= $currentSiteId ?>, <?= $member['id'] ?>)">
+                          제거
+                        </button>
                       <?php else: ?>
                         -
                       <?php endif; ?>
@@ -509,17 +509,79 @@ $stamps = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </main>
   </div>
 <script>
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
 
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
 
-    btn.classList.add('active');
-    document.getElementById('tab-' + tab).classList.add('active');
+      btn.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    });
   });
-});
+  
+  function showNotice(type, message) {
+    const notice = document.getElementById('noticeArea');
+
+    notice.className = 'notice ' + type;
+    notice.textContent = message;
+
+    notice.classList.remove('hidden');
+
+    setTimeout(() => {
+      notice.classList.add('hidden');
+    }, 5000);
+  }
+
+  document.getElementById('staffRegisterForm')
+  .addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+
+    fetch('register_staff.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      showNotice(data.success ? 'success' : 'error', data.message);
+
+      if (data.success) {
+        form.reset();
+        setTimeout(() => location.reload(), 800);
+      }
+    })
+    .catch(() => {
+      showNotice('error', '서버 통신 중 오류가 발생했습니다.');
+    });
+  });
+
+  function removeStaff(siteId, userId) {
+    if (!confirm('해당 직원을 현장에서 제거하시겠습니까?')) return;
+
+    const formData = new FormData();
+    formData.append('site_id', siteId);
+    formData.append('user_id', userId);
+
+    fetch('remove_staff.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      showNotice(data.success ? 'success' : 'error', data.message);
+
+      if (data.success) {
+        setTimeout(() => location.reload(), 800);
+      }
+    })
+    .catch(() => {
+      showNotice('error', '서버 통신 중 오류가 발생했습니다.');
+    });
+  }
 </script>
 </body>
 </html>
